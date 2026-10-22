@@ -251,7 +251,6 @@ namespace
     }
 
   private:
-    mcp::HostInterface m_host;
     ddg::Context m_context;
     std::shared_ptr<ddg::LinkRegistry> m_links;
     std::unique_ptr<ddg::DuckDuckGoSearcher> m_searcher;
