@@ -41,10 +41,41 @@ set(DDG_CORE_SOURCES
     src/ddg_core/utils.cpp
 )
 
+set(DDG_CORE_HEADERS
+    src/ddg_core/blocked_url_error.hpp
+    src/ddg_core/connect_error.hpp
+    src/ddg_core/constants.hpp
+    src/ddg_core/context.hpp
+    src/ddg_core/fetcher.hpp
+    src/ddg_core/host_rate_limiter.hpp
+    src/ddg_core/html_document.hpp
+    src/ddg_core/html_extract.hpp
+    src/ddg_core/html_query.hpp
+    src/ddg_core/html_text.hpp
+    src/ddg_core/http_client.hpp
+    src/ddg_core/http_error.hpp
+    src/ddg_core/http_response.hpp
+    src/ddg_core/http_status_error.hpp
+    src/ddg_core/link_registry.hpp
+    src/ddg_core/rate_limiter_factory.hpp
+    src/ddg_core/rate_limiter.hpp
+    src/ddg_core/safe_search_mode.hpp
+    src/ddg_core/searcher.hpp
+    src/ddg_core/search_result.hpp
+    src/ddg_core/sliding_rate_limiter.hpp
+    src/ddg_core/timeout_error.hpp
+    src/ddg_core/tls_verify.hpp
+    src/ddg_core/token_bucket_limiter.hpp
+    src/ddg_core/ttl_cache.hpp
+    src/ddg_core/utils.hpp
+)
+
 add_library(mcpqt_websearch MODULE
     src/websearch_plugin.cpp
     src/plugin.cpp
+    src/plugin.h
     ${DDG_CORE_SOURCES}
+    ${DDG_CORE_HEADERS}
 )
 set_target_properties(mcpqt_websearch PROPERTIES PREFIX "")
 
