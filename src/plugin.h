@@ -21,6 +21,9 @@ namespace mcp
         callFunc;
     std::function<bool(const QString& signature)> regFunc;
     std::function<void(const QString& reason)> unloadSelf;
+    /// Diagnostic logging. `level` is an mcp::LogLevel value (0=trace ..
+    /// 4=error, 5=off). The host routes this through its global log sink.
+    std::function<void(int level, const QString& message)> log;
   };
 
   class PluginInterface : public QObject

@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: AGPL-3.0-only
+// SPDX-License-Identifier: Apache-2.0
+
+#include "safe_search_mode.hpp"
+
+#include "utils.hpp"
+
+namespace ddg {
+
+const char* safe_search_value(SafeSearchMode m) {
+    switch (m) {
+        case SafeSearchMode::Strict:   return "1";
+        case SafeSearchMode::Moderate: return "-1";
+        case SafeSearchMode::Off:      return "-2";
+    }
+    return "-1";
+}
+
+const char* safe_search_name(SafeSearchMode m) {
+    switch (m) {
+        case SafeSearchMode::Strict:   return "STRICT";
+        case SafeSearchMode::Moderate: return "MODERATE";
+        case SafeSearchMode::Off:      return "OFF";
+    }
+    return "MODERATE";
+}
+
+std::optional<SafeSearchMode> safe_search_from_name(const std::string& name) {
+    const std::string n = to_lower(trim(name));
+    if (n == "strict")   return SafeSearchMode::Strict;
+    if (n == "moderate") return SafeSearchMode::Moderate;
+    if (n == "off")      return SafeSearchMode::Off;
+    return std::nullopt;
+}
+
+}  // namespace ddg
