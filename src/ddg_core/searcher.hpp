@@ -25,6 +25,20 @@ class HttpClient;
 /// Exposed as a free function so it can be unit-tested with fixtures.
 std::vector<SearchResult> parse_search_results(const std::string& html, int max_results);
 
+/// Parse a DuckDuckGo "lite" results page into SearchResults.
+std::vector<SearchResult> parse_lite_results(const std::string& html, int max_results);
+
+/// Pagination state carried between "lite" result pages. Only the hidden `s`
+/// field is required by DuckDuckGo; `vqd` is preserved for compatibility with
+/// pages that expose it.
+struct LiteNextPage {
+    std::string s;
+    std::string vqd;
+};
+
+/// Extract the next-page form parameters from a "lite" results page.
+LiteNextPage extract_lite_next_page(const std::string& html);
+
 /// Decode a `//duckduckgo.com/l/?uddg=...` redirect wrapper into the real URL.
 /// Non-wrapped links are returned unchanged.
 std::string decode_uddg(const std::string& link);
@@ -50,7 +64,8 @@ public:
     std::vector<SearchResult> search(const std::string& query,
                                      const Context&     ctx,
                                      int                max_results = 10,
-                                     const std::string& region      = "");
+                                     const std::string& region      = "",
+                                     const std::string& timelimit   = "");
 
     std::string format_results_for_llm(const std::vector<SearchResult>& results) const;
 
@@ -60,6 +75,9 @@ private:
     std::string display_url(const std::string& url) const;
     std::string request(const std::string&                        data_query,
                         const std::string&                        data_region,
+                        const std::string&                        s,
+                        const std::string&                        vqd,
+                        const std::string&                        timelimit,
                         const Context&                            ctx);
 
     Config                           config_;

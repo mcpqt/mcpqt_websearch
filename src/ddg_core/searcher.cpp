@@ -24,7 +24,7 @@
 namespace ddg {
 namespace {
 
-constexpr const char* kBaseUrl = "https://html.duckduckgo.com/html";
+constexpr const char* kBaseUrl = "https://lite.duckduckgo.com/lite";
 
 const std::map<std::string, std::string>& search_headers() {
     static const std::map<std::string, std::string> headers = {
@@ -39,14 +39,39 @@ const std::map<std::string, std::string>& search_headers() {
         {"Connection", "keep-alive"},
         {"Sec-Fetch-Dest", "document"},
         {"Sec-Fetch-Mode", "navigate"},
-        {"Sec-Fetch-Site", "none"},
+        {"Sec-Fetch-Site", "same-origin"},
         {"Sec-Fetch-User", "?1"},
+        {"Referer", "https://duckduckgo.com/"},
         {"Sec-Ch-Ua", "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""},
         {"Sec-Ch-Ua-Mobile", "?0"},
         {"Sec-Ch-Ua-Platform", "\"Windows\""},
         {"Upgrade-Insecure-Requests", "1"},
     };
     return headers;
+}
+
+const char* lite_safe_search_value(SafeSearchMode m) {
+    switch (m) {
+        case SafeSearchMode::Strict:   return "1";
+        case SafeSearchMode::Moderate: return "";
+        case SafeSearchMode::Off:      return "-1";
+    }
+    return "";
+}
+
+/// DuckDuckGo's `df` parameter accepts d/w/m/y. Accept the friendly spellings an
+/// AI agent is likely to emit and reject everything else instead of silently
+/// searching without a time filter.
+std::string normalize_timelimit(const std::string& raw) {
+    const std::string v = to_lower(trim(raw));
+    if (v.empty() || v == "all" || v == "any" || v == "none") return "";
+    if (v == "d" || v == "day" || v == "1d" || v == "past-day") return "d";
+    if (v == "w" || v == "week" || v == "1w" || v == "7d" || v == "past-week") return "w";
+    if (v == "m" || v == "month" || v == "1m" || v == "30d" || v == "past-month") return "m";
+    if (v == "y" || v == "year" || v == "1y" || v == "365d" || v == "past-year") return "y";
+    throw std::invalid_argument(
+        "Invalid timelimit '" + raw +
+        "'; expected day, week, month, year (or d/w/m/y), or empty for no filter");
 }
 
 }  // namespace
@@ -99,6 +124,59 @@ std::vector<SearchResult> parse_search_results(const std::string& html, int max_
     return results;
 }
 
+std::vector<SearchResult> parse_lite_results(const std::string& html, int max_results) {
+    std::vector<SearchResult> results;
+
+    html::Document doc = html::Document::parse(html);
+    if (!doc.valid()) return results;
+    lxb_dom_node_t* root = doc.root();
+
+    const auto tables = html::select(root, "table");
+    if (tables.empty()) return results;
+    lxb_dom_node_t* last_table = tables.back();
+    const auto      rows       = html::select(last_table, "tr");
+
+    // The lite layout uses four rows per hit: title, snippet, URL preview, separator.
+    for (std::size_t i = 0; i + 1 < rows.size(); i += 4) {
+        lxb_dom_node_t* title_row   = rows[i];
+        lxb_dom_node_t* snippet_row = rows[i + 1];
+
+        lxb_dom_node_t* anchor = html::find(title_row, "a");
+        if (!anchor) continue;
+
+        const std::string title = html::get_text(anchor, "", true);
+        std::string       link  = html::attr(anchor, "href");
+        if (link.find("y.js") != std::string::npos) continue;  // skip ad results
+        if (link.find("google.com/search?q=") != std::string::npos) continue;
+        link = decode_uddg(link);
+
+        lxb_dom_node_t*   snippet_elem = html::select_one(snippet_row, ".result-snippet");
+        const std::string snippet =
+            snippet_elem ? html::get_text(snippet_elem, "", true) : "";
+
+        results.push_back(
+            SearchResult{title, link, snippet, static_cast<int>(results.size()) + 1});
+        if (static_cast<int>(results.size()) >= max_results) break;
+    }
+    return results;
+}
+
+LiteNextPage extract_lite_next_page(const std::string& html) {
+    LiteNextPage next;
+
+    html::Document doc = html::Document::parse(html);
+    if (!doc.valid()) return next;
+    lxb_dom_node_t* root = doc.root();
+
+    if (lxb_dom_node_t* s_input = html::select_one(root, "form input[name='s']")) {
+        next.s = html::attr(s_input, "value");
+    }
+    if (lxb_dom_node_t* vqd_input = html::select_one(root, "form input[name='vqd']")) {
+        next.vqd = html::attr(vqd_input, "value");
+    }
+    return next;
+}
+
 DuckDuckGoSearcher::DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegistry> links)
     : config_(std::move(config)),
       links_(std::move(links)),
@@ -121,13 +199,22 @@ std::string DuckDuckGoSearcher::display_url(const std::string& url) const {
 
 std::string DuckDuckGoSearcher::request(const std::string& data_query,
                                         const std::string& data_region,
+                                        const std::string& s,
+                                        const std::string& vqd,
+                                        const std::string& timelimit,
                                         const Context&     ctx) {
-    const std::map<std::string, std::string> data = {
+    std::map<std::string, std::string> data = {
         {"q", data_query},
-        {"b", ""},
+        {"s", s},
+        {"o", "json"},
+        {"api", "d.js"},
+        {"vqd", vqd},
         {"kl", data_region},
-        {"kp", safe_search_value(config_.safe_search)},
+        {"bing_market", data_region},
     };
+    if (!timelimit.empty()) data["df"] = timelimit;
+    const char* p = lite_safe_search_value(config_.safe_search);
+    if (p && *p) data["p"] = p;
 
     HttpResponse resp = client_->post_form(kBaseUrl, data, search_headers(), 30000);
     if (resp.status == 429) {
@@ -149,26 +236,60 @@ std::string DuckDuckGoSearcher::request(const std::string& data_query,
 std::vector<SearchResult> DuckDuckGoSearcher::search(const std::string& query,
                                                      const Context&     ctx,
                                                      int                max_results,
-                                                     const std::string& region) {
+                                                     const std::string& region,
+                                                     const std::string& timelimit) {
     try {
         rate_limiter_->acquire();
 
         const std::string effective_region = region.empty() ? config_.default_region : region;
-
-        ctx.info("Searching DuckDuckGo for: " + query +
-                 " (SafeSearch: " + safe_search_name(config_.safe_search) +
-                 ", Region: " + (effective_region.empty() ? "default" : effective_region) +
-                 ", backend=" + config_.backend + ")");
-
-        std::string html;
+        std::string       effective_timelimit;
         try {
-            html = request(query, effective_region, ctx);
-        } catch (const std::runtime_error& e) {
+            effective_timelimit = normalize_timelimit(timelimit);
+        } catch (const std::invalid_argument& e) {
             ctx.error(e.what());
             return {};
         }
 
-        std::vector<SearchResult> results = parse_search_results(html, max_results);
+        ctx.info("Searching DuckDuckGo for: " + query +
+                 " (SafeSearch: " + safe_search_name(config_.safe_search) +
+                 ", Region: " + (effective_region.empty() ? "default" : effective_region) +
+                 ", Time: " + (effective_timelimit.empty() ? "any" : effective_timelimit) +
+                 ", backend=" + config_.backend + ")");
+
+        std::vector<SearchResult> results;
+        std::string               s   = "0";
+        std::string               vqd;
+
+        constexpr int kMaxPages = 5;
+        for (int page = 0;
+             page < kMaxPages && static_cast<int>(results.size()) < max_results; ++page) {
+            std::string html;
+            try {
+                html = request(query, effective_region, s, vqd, effective_timelimit, ctx);
+            } catch (const std::runtime_error& e) {
+                ctx.error(e.what());
+                break;
+            }
+
+            if (html.find("No more results.") != std::string::npos ||
+                html.find("No results.") != std::string::npos) {
+                break;
+            }
+
+            const int  remaining    = max_results - static_cast<int>(results.size());
+            auto       page_results = parse_lite_results(html, remaining);
+            if (page_results.empty()) break;
+
+            for (auto& result : page_results) {
+                result.position = static_cast<int>(results.size()) + 1;
+                results.push_back(std::move(result));
+            }
+
+            const LiteNextPage next = extract_lite_next_page(html);
+            if (next.s.empty() || next.s == s) break;
+            s   = next.s;
+            vqd = next.vqd;
+        }
 
         ctx.info("Successfully found " + std::to_string(results.size()) + " results");
         return results;

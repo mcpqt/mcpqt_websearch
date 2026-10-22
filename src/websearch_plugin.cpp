@@ -199,13 +199,14 @@ namespace
     }
 
   public slots:
-    QString search(QString query, int max_results, QString region)
+    QString search(QString query, int max_results, QString region, QString timelimit)
     {
       try
       {
         const auto results = m_searcher->search(
             query.toStdString(), m_context,
-            max_results <= 0 ? 10 : max_results, region.toStdString());
+            max_results <= 0 ? 10 : max_results, region.toStdString(),
+            timelimit.toStdString());
         return QString::fromStdString(
             m_searcher->format_results_for_llm(results));
       }
