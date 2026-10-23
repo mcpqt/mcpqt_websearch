@@ -162,7 +162,7 @@ std::string html_to_text(const std::string& html, const std::string& mode) {
             }
         }
         while (!kept.isEmpty() && kept.last().isEmpty()) kept.removeLast();
-        const QRegularExpression numbered_entry(QStringLiteral(R"(^\d+\.)"));
+        static const QRegularExpression numbered_entry(QStringLiteral(R"(^\d+\.)"));
         QStringList spaced;
         for (const QString& line : kept) {
             const bool numbered = numbered_entry.match(line).hasMatch();
