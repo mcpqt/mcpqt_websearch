@@ -101,6 +101,8 @@ int main(int argc, char** argv) {
     expect_not_contains(markdown, "<style");
     expect_not_contains(markdown, "<form");
     expect_not_contains(markdown, "<a href");
+    expect_not_contains(markdown, "![");
+    expect_not_contains(markdown, "duckduckgo.com/t/sl_l");
 
     check(count(markdown, '[') == count(markdown, ']'),
           "markdown square brackets are unbalanced");

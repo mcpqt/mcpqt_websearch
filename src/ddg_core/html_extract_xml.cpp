@@ -21,7 +21,7 @@ bool is_skipped(std::string_view tag) {
     static constexpr std::string_view skipped[] = {
         "script", "style", "noscript", "nav",      "header", "footer",
         "aside",  "form",  "iframe",   "svg",      "canvas", "template",
-        "button", "input", "select",   "textarea",
+        "button", "input", "select",   "textarea", "img",
     };
     for (auto s : skipped)
         if (tag == s) return true;
@@ -103,12 +103,6 @@ void markdown_walk(const xml::Node* node, QString& out, bool in_pre) {
             out += QStringLiteral("[%1](%2)").arg(label, href);
         else
             out += label;
-        return;
-    }
-    if (tag == "img") {
-        const QString src = node->attrs.value(QStringLiteral("src"));
-        const QString alt = node->attrs.value(QStringLiteral("alt"));
-        if (!src.isEmpty()) out += QStringLiteral("![%1](%2)").arg(alt, src);
         return;
     }
     if (tag.size() == 2 && tag[0] == 'h' && tag[1] >= '1' && tag[1] <= '6') {
