@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.20)
 project(mcpqt_websearch VERSION 0.1.0 LANGUAGES C CXX)
 
+include(CTest)
+
 # ----- C++ / Qt boilerplate ------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -128,3 +130,43 @@ target_compile_options(mcpqt_websearch PRIVATE
         -Wall -Wextra -Wpedantic>
     $<$<CXX_COMPILER_ID:MSVC>:/W4 /permissive->
 )
+
+# ----- tests ---------------------------------------------------------------
+if(BUILD_TESTING)
+    if(DDG_USE_LEXBOR)
+        set(DDG_TEST_PARSER_SOURCES
+            src/ddg_core/html_extract.cpp
+            src/ddg_core/html_document.cpp
+            src/ddg_core/html_query.cpp
+            src/ddg_core/html_text.cpp
+            src/ddg_core/utils.cpp
+        )
+    else()
+        set(DDG_TEST_PARSER_SOURCES
+            src/ddg_core/html_extract_xml.cpp
+            src/ddg_core/xml_dom.cpp
+        )
+    endif()
+
+    add_executable(ddg_html_to_markdown_test
+        tests/html_to_markdown_test.cpp
+        ${DDG_TEST_PARSER_SOURCES}
+    )
+    target_include_directories(ddg_html_to_markdown_test PRIVATE
+        src
+        src/ddg_core
+    )
+    target_link_libraries(ddg_html_to_markdown_test PRIVATE
+        Qt6::Core
+        Qt6::Network
+    )
+    if(DDG_USE_LEXBOR)
+        target_compile_definitions(ddg_html_to_markdown_test PRIVATE DDG_USE_LEXBOR=1)
+        target_link_libraries(ddg_html_to_markdown_test PRIVATE lexbor_static)
+    endif()
+
+    add_test(NAME ddg_html_to_markdown
+        COMMAND ddg_html_to_markdown_test
+            ${CMAKE_CURRENT_SOURCE_DIR}/tests/data/ddg_lite_results.html
+    )
+endif()
