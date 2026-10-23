@@ -145,7 +145,23 @@ std::string html_to_text(const std::string& html, const std::string& mode) {
     if (mode == "markdown") {
         QString out;
         markdown_walk(start, out, false);
-        return out.simplified().toStdString();
+        QStringList lines = out.split(QLatin1Char('\n'));
+        QStringList kept;
+        bool previous_blank = false;
+        for (QString& line : lines) {
+            line = line.simplified();
+            if (line.isEmpty()) {
+                if (!kept.isEmpty() && !previous_blank) {
+                    kept.push_back(QString());
+                    previous_blank = true;
+                }
+            } else {
+                kept.push_back(line);
+                previous_blank = false;
+            }
+        }
+        while (!kept.isEmpty() && kept.last().isEmpty()) kept.removeLast();
+        return kept.join(QLatin1Char('\n')).toStdString();
     }
 
     QString out;
