@@ -1,155 +1,75 @@
-# mcpqt_template_plugin
+# mcpqt_websearch
 
-An independent, out-of-tree plugin template for
-[`mcpqt_host`](../mcpqt_host). Copy this repository, rename the plugin, and
-replace the example functions with your own.
+A DuckDuckGo web search plugin for [`mcpqt_host`](../mcpqt_host). It exposes
+search, page fetching, and link expansion as MCP tools. No API key is required.
 
-The plugin is an ordinary Qt plugin (`QObject` + `mcp::PluginInterface`) built
-as a `MODULE` library. `mcpqt_host`'s servers load it at runtime with
-`QPluginLoader`; the plugin never links against the server executable.
+## Requirements
 
-## Contents
+- C++20 and Qt 6.4+
+- An installed `mcpqt_host` to load the built plugin
 
-| File | Purpose |
-| --- | --- |
-| `src/example_plugin.cpp` | Plugin class, metadata (`Q_CLASSINFO`), typed public slots. |
-| `src/example_plugin.json` | MCP `Tools` and `Resources` declarations, keyed by function signature. |
-| `src/plugin.h`, `src/plugin.cpp` | Vendored copies of the host's plugin ABI, so this repository is self-contained. |
-| `CMakeLists.txt` | Standalone build; links `mcp::mcp`. |
-
-All C++ sources and the plugin metadata JSON live in `src/`.
-
-> `src/plugin.h`/`src/plugin.cpp` are kept in this repository so the template does not
-> depend on the host's source tree. They mirror `mcpqt_host/src/plugin.{h,cpp}`;
-> if the plugin ABI changes, update these copies (their includes use the public
-> `<mcp/...>` headers from the linked `mcp::mcp` library).
-
-## Building
-
-Requires C++20, Qt 6.4+, and either an installed `mcpqt_host` or its source
-tree.
-
-### Against an installed host
+## Build
 
 ```sh
-cmake --install /path/to/mcpqt_host/build --prefix /usr/local
 cmake -S . -B build
 cmake --build build
 ```
 
-### Against an in-tree host (no install)
+This produces `build/mcpqt_websearch.so` (`.dylib` / `.dll` on other
+platforms).
+
+To use the vendored Lexbor HTML parser instead of the Qt XML fallback:
 
 ```sh
-cmake -S . -B build -DMCPQT_HOST_SOURCE_DIR=/path/to/mcpqt_host
+cmake -S . -B build -DDDG_USE_LEXBOR=ON
 cmake --build build
 ```
 
-This produces `build/mcpqt_example_plugin.so` (`.dylib` / `.dll` on other
-platforms).
+## Run
 
-## Running
-
-Point either server at the built module (a file or a directory):
+Load the module directly or copy it into the host's plugin directory:
 
 ```sh
 # stdio
-/path/to/mcp_stdio_server ./build/mcpqt_example_plugin.so
+/path/to/mcp_stdio_server ./build/mcpqt_websearch.so
 
 # Streamable HTTP
-/path/to/mcp_http_server --port 8848 ./build/mcpqt_example_plugin.so
+/path/to/mcp_http_server --port 8848 ./build/mcpqt_websearch.so
 ```
 
-Or copy it into the host's plugin directory and load the directory.
-
-Try it with the bundled client:
+Test with the bundled client:
 
 ```sh
-/path/to/mcp_tester /path/to/mcp_stdio_server ./build/mcpqt_example_plugin.so
+/path/to/mcp_tester /path/to/mcp_stdio_server ./build/mcpqt_websearch.so
 ```
 
-then `list`, and `call` with `example/add` and `{"a":2,"b":40}`.
+## Tools
 
-## Customizing
+| Tool | Description |
+| --- | --- |
+| `websearch/search` | Search DuckDuckGo and return titles, URLs, and snippets. |
+| `websearch/fetch_content` | Fetch a page and extract its main text. Supports pagination. |
+| `websearch/expand_link` | Resolve a `ref://<id>` token from search results to its full URL. |
 
-1. **Rename** the project/target (`mcpqt_example_plugin`), source file, class
-   (`ExamplePlugin`), and JSON file.
-2. **Update `Q_CLASSINFO`**: `id` is required and must be unique among loaded
-   plugins; `version` and `description` are optional. The `id` is also used for
-   dependency declarations.
-3. **Keep the IID**: `Q_PLUGIN_METADATA(IID "ai.mcp.qt.mcp-plugin/2.0" ...)`
-   must match `MCP_PLUGIN_IID`.
-4. **Add typed public slots** and declare them in the JSON. A function is
-   addressed by its **canonical signature**:
+Search results may include shortened `ref://` links. Fetching accepts either a
+full URL or a reference token. Markdown extraction omits images and scripts.
 
-   ```
-   <return_type> <ClassName>::<function_name>(<comma-separated param types>)
-   ```
+## Configuration
 
-   For example `QString ExamplePlugin::hello(QString)`. The metadata key must
-   match exactly (return type, class name, and parameter types).
+Configuration is read from environment variables at plugin load:
 
-   - Return type: `void` or any registered `QMetaType` (e.g. `QString`,
-     `double`, `int`, `QVariant`).
-   - 0–10 parameters, using normal `QMetaType`-registered types.
-   - Parameter **names** must match the `inputSchema` property names; the host
-     maps incoming JSON arguments by name.
-   - Throw `std::runtime_error` (or `mcp::Error`) to report a tool error.
-
-5. **Namespace tool names** (e.g. `mytool/do_something`) to avoid collisions
-   with other plugins.
-6. **Optional resources**: declare them under `Resources`, keyed by URI, with
-   the signature of a reader function that takes an optional single `QString`
-   (the URI) and returns text. Included in the template as `example://info`.
-7. **Optional dependencies**: add `"dependencies": ["other-plugin-id"]` (or
-   function signatures) to the metadata file; the host defers loading until
-   they are available.
-
-### Elicitation
-
-If a tool needs to ask the user a question, call the host's `elicit` service
-(the host services are listed by `getFuncs()`). The request and result are
-exchanged as JSON:
-
-```cpp
-const mcp::ElicitRequestParams params = mcp::ElicitFormRequestParams{
-    .message = "Proceed?",
-    .requested_schema = QJsonObject{
-        {"type", "object"},
-        {"properties", QJsonObject{
-            {"confirm", QJsonObject{{"type", "boolean"}}},
-        }},
-        {"required", QJsonArray{"confirm"}},
-    },
-};
-const QVariant encoded = m_host.callFunc(
-    "QVariant mcp::Host::elicit(QVariant)",
-    {QVariant::fromValue(mcp::to_json(params))});
-const mcp::ElicitResult answer = mcp::from_json<mcp::ElicitResult>(
-    encoded.value<QJsonValue>());
-if (answer.action != mcp::ElicitAction::accept) {
-    throw std::runtime_error("cancelled by user");
-}
-```
-
-The host routes elicitation to the session that invoked the tool (stdio or
-HTTP).
-
-## Notes
-
-- Build the plugin as a `MODULE` library with an empty `PREFIX` so the artifact
-  is named `mcpqt_example_plugin.so`.
-- `initialize()` runs once at load; call `registerPublicSlots()` there after
-  storing the host handle.
-- `shutdown()` runs before the library is detached.
-- Functions run synchronously on the thread dispatching the tool call; keep
-  them thread-safe if the server may handle concurrent requests.
-- Host services are ordinary registry entries: `getFuncs()` lists
-  `bool mcp::Host::claimLogging(QString)` and
-  `QVariant mcp::Host::elicit(QVariant)`, and both are invoked through
-  `callFunc` (they are not members of `HostInterface`).
-- To own diagnostic logging, call `claimLogging` with the canonical signature
-  of your own `void <Class>::log(int, QString)` slot. The claiming plugin is
-  pinned and never unloaded (its sink runs code inside the plugin library).
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DDG_SAFE_SEARCH` | `MODERATE` | Safe-search level: `STRICT`, `MODERATE`, or `OFF`. |
+| `DDG_REGION` | `wt-wt` | Default region/language code. |
+| `DDG_PARSE_MODE` | `text` | Page extraction mode: `text`, `main`, or `markdown`. |
+| `DDG_SEARCH_BACKEND`, `DDG_FETCH_BACKEND` | build default | Backend override. |
+| `DDG_SEARCH_RPM`, `DDG_FETCH_RPM`, `DDG_FETCH_HOST_RPM` | `30`, `20`, `0` | Rate limits (requests per minute). |
+| `DDG_CACHE_TTL`, `DDG_CACHE_MAX_ENTRIES` | `300`, `64` | Fetch cache lifetime and size. |
+| `DDG_RATE_LIMIT_STRATEGY` | `sliding` | Rate-limiter strategy. |
+| `DDG_SSL_VERIFY`, `DDG_CA_CERTS` | enabled | TLS verification and CA bundle path. |
+| `DDG_ALLOW_PRIVATE_URLS` | disabled | Allow fetching private/local URLs. |
+| `DDG_REF_URL_THRESHOLD` | build default | URL length threshold for shortened links. |
 
 ## License
 
