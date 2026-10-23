@@ -8,6 +8,7 @@
 
 #include "xml_dom.hpp"
 
+#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 
@@ -162,7 +163,17 @@ std::string html_to_text(const std::string& html, const std::string& mode) {
             }
         }
         while (!kept.isEmpty() && kept.last().isEmpty()) kept.removeLast();
-        return kept.join(QLatin1Char('\n')).toStdString();
+        const QRegularExpression numbered_entry(QStringLiteral(R"(^\d+\.)"));
+        QStringList spaced;
+        for (const QString& line : kept) {
+            const bool numbered = numbered_entry.match(line).hasMatch();
+            if (numbered && !spaced.isEmpty()) {
+                if (!spaced.last().isEmpty()) spaced.push_back(QString());
+                spaced.push_back(QString());
+            }
+            spaced.push_back(line);
+        }
+        return spaced.join(QLatin1Char('\n')).toStdString();
     }
 
     QString out;
