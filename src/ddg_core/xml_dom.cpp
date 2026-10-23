@@ -2,6 +2,8 @@
 
 #include "xml_dom.hpp"
 
+#include <QRegularExpression>
+#include <QStringList>
 #include <QXmlStreamReader>
 
 #include <cctype>
@@ -43,10 +45,85 @@ void collect_text(const Node* node, QString& out) {
     for (const auto& child : node->children) collect_text(child.get(), out);
 }
 
+QString to_well_formed_xml(QString document) {
+    document.replace(QStringLiteral("&nbsp;"), QStringLiteral("&#160;"),
+                     Qt::CaseInsensitive);
+
+    static const QStringList kVoidElements = {
+        QStringLiteral("link"),   QStringLiteral("meta"), QStringLiteral("input"),
+        QStringLiteral("img"),    QStringLiteral("br"),   QStringLiteral("hr"),
+        QStringLiteral("source"), QStringLiteral("wbr"),  QStringLiteral("area"),
+        QStringLiteral("base"),   QStringLiteral("col"),  QStringLiteral("embed"),
+        QStringLiteral("param"),  QStringLiteral("track")};
+
+    static const QRegularExpression tag_re(
+        QStringLiteral(R"(<!--.*?-->|<(?:[^>"']|"[^"]*"|'[^']*')*>)"),
+        QRegularExpression::DotMatchesEverythingOption);
+    static const QRegularExpression name_re(
+        QStringLiteral(R"(^<\s*([A-Za-z][A-Za-z0-9:-]*))"));
+    static const QRegularExpression attr_re(
+        QStringLiteral(
+            R"(([A-Za-z_:][A-Za-z0-9_:.-]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?)"));
+
+    QString out;
+    out.reserve(document.size());
+    qsizetype last = 0;
+    auto      it   = tag_re.globalMatch(document);
+    while (it.hasNext()) {
+        const auto match = it.next();
+        out += document.mid(last, match.capturedStart() - last);
+
+        const QString tag = match.captured();
+        if (tag.startsWith(QStringLiteral("</")) ||
+            tag.startsWith(QStringLiteral("<!DOCTYPE")) ||
+            tag.startsWith(QStringLiteral("<!--")) ||
+            tag.startsWith(QStringLiteral("<?"))) {
+            out += tag;
+            last = match.capturedEnd();
+            continue;
+        }
+
+        const auto    name_match = name_re.match(tag);
+        const QString name       = name_match.captured(1);
+        if (name.isEmpty()) {
+            out += tag;
+            last = match.capturedEnd();
+            continue;
+        }
+
+        QString attrs = tag.mid(name_match.capturedLength());
+        bool    self_close = attrs.trimmed().endsWith(QLatin1Char('/'));
+        if (self_close) attrs = attrs.trimmed().chopped(1);
+
+        QString rebuilt = QLatin1Char('<') + name;
+        auto    attr_it = attr_re.globalMatch(attrs);
+        while (attr_it.hasNext()) {
+            const auto    attr       = attr_it.next();
+            const QString attr_name  = attr.captured(1);
+            QString       attr_value = attr.captured(2);
+            if (attr_value.isEmpty()) {
+                attr_value = QLatin1Char('"') + attr_name + QLatin1Char('"');
+            } else if (!attr_value.startsWith(QLatin1Char('"')) &&
+                       !attr_value.startsWith(QLatin1Char('\''))) {
+                attr_value = QLatin1Char('"') + attr_value + QLatin1Char('"');
+            }
+            rebuilt += QLatin1Char(' ') + attr_name + QLatin1Char('=') + attr_value;
+        }
+
+        const bool is_void = kVoidElements.contains(name, Qt::CaseInsensitive);
+        rebuilt += (self_close || is_void) ? QStringLiteral("/>") : QStringLiteral(">");
+        out += rebuilt;
+        last = match.capturedEnd();
+    }
+    out += document.mid(last);
+    return out;
+}
+
 }  // namespace
 
 std::unique_ptr<Node> parse(const std::string& html) {
-    QXmlStreamReader reader(QString::fromStdString(html));
+    const QString     document = to_well_formed_xml(QString::fromStdString(html));
+    QXmlStreamReader reader(document);
     auto             root = std::make_unique<Node>();
     root->tag             = QStringLiteral("#document");
     Node* current         = root.get();
