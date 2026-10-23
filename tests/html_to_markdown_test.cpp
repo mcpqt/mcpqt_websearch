@@ -67,6 +67,8 @@ int main(int argc, char** argv) {
 
     check(!markdown.empty(), "markdown output is empty");
     check(markdown.find('\0') == std::string::npos, "markdown contains NUL bytes");
+    check(markdown.find('\n') != std::string::npos,
+          "markdown output has no newline characters");
 
     expect_contains(markdown, "SQL Tryit Editor v1.6 - W3Schools");
     expect_contains(markdown, "SQL Test");
