@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// SPDX-License-Identifier: Apache-2.0
 //
 // DOM query helpers backed by lexbor's CSS selector engine (BeautifulSoup's
 // select / find / find_all equivalents). Returned lxb_dom_node_t* pointers are

@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// SPDX-License-Identifier: Apache-2.0
 //
 // End-to-end HTML -> markdown regression test for a saved DuckDuckGo lite
 // results page. No network access is used.

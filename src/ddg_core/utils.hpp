@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: AGPL-3.0-only
-// SPDX-License-Identifier: Apache-2.0
 //
 // Free-function utilities shared across the port: small string helpers, URL
 // helpers, ref:// token helpers, Retry-After parsing, and the SSRF guard.
