@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: AGPL-3.0-only
 //
 // HttpClient transport backed by QNetworkAccessManager. Compiled when
 // DDG_HTTP_BACKEND == "qt".

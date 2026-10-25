@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: AGPL-3.0-only
 //
 // TLS verification settings (server.py DDG_SSL_VERIFY / DDG_CA_CERTS).
 

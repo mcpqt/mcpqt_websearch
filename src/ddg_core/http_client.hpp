@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: AGPL-3.0-only
 //
 // Outbound HTTP client. The transport implementation is selected at configure
 // time (see DDG_HTTP_BACKEND): either QNetworkAccessManager ("qt") or the

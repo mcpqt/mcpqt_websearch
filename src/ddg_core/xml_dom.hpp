@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: AGPL-3.0-only
 //
 // Minimal read-only DOM built with QXmlStreamReader. Used as the HTML parser
 // fallback when the vendored lexbor parser is disabled.

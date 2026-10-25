@@ -34,23 +34,13 @@ build/
 *.prl
 *.qmlls.ini
 
-# Qt unit tests
-target_wrapper.*
-
 # QtCreator
 *.autosave
-
-# QtCreator Qml
-*.qmlproject.user
-*.qmlproject.user.*
-
-# QtCreator CMake
-CMakeLists.txt.user*
-
-# QtCreator 4.8< compilation database
+*.user*
 compile_commands.json
-
-# QtCreator local machine specific files for imported projects
-*creator.user*
-
+target_wrapper.*
 *_qmlcache.qrc
+
+# LLM stuff
+AGENTS.md
+docs/

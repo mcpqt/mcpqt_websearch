@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: Apache-2.0
+// SPDX-License-Identifier: AGPL-3.0-only
 //
 // RAII owner for a parsed lexbor HTML document. Borrowed DOM node pointers
 // (lxb_dom_node_t*) are only valid while the owning Document is alive.
