@@ -31,7 +31,7 @@ set(DDG_CORE_SOURCES
     src/ddg_core/context.cpp
     src/ddg_core/fetcher.cpp
     src/ddg_core/host_rate_limiter.cpp
-    src/ddg_core/http_client.cpp
+    src/ddg_core/http_transport.cpp
     src/ddg_core/webio_transport.cpp
     src/ddg_core/link_registry.cpp
     src/ddg_core/rate_limiter_factory.cpp
@@ -67,7 +67,7 @@ set(DDG_CORE_HEADERS
     src/ddg_core/fetcher.hpp
     src/ddg_core/host_rate_limiter.hpp
     src/ddg_core/html_extract.hpp
-    src/ddg_core/http_client.hpp
+    src/ddg_core/http_transport.hpp
     src/ddg_core/http_error.hpp
     src/ddg_core/http_response.hpp
     src/ddg_core/http_status_error.hpp

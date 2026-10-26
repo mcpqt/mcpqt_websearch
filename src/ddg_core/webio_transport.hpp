@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "http_client.hpp"
+#include "http_transport.hpp"
 
 #include <QString>
 #include <QVariant>

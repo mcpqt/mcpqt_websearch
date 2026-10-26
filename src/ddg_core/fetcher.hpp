@@ -7,7 +7,7 @@
 #include "constants.hpp"
 #include "context.hpp"
 #include "host_rate_limiter.hpp"
-#include "http_client.hpp"
+#include "http_transport.hpp"
 #include "link_registry.hpp"
 #include "rate_limiter.hpp"
 #include "ttl_cache.hpp"
@@ -53,7 +53,6 @@ private:
     std::unique_ptr<RateLimiterBase> rate_limiter_;
     std::unique_ptr<HostRateLimiter> host_limiter_;  // null when disabled
     TTLCache                         cache_;
-    std::unique_ptr<HttpClient>      client_;
 };
 
 }  // namespace ddg

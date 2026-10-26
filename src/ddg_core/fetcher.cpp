@@ -4,7 +4,7 @@
 
 #include "blocked_url_error.hpp"
 #include "connect_error.hpp"
-#include "http_client.hpp"
+#include "http_transport.hpp"
 #include "http_status_error.hpp"
 #include "html_extract.hpp"
 #include "rate_limiter_factory.hpp"
@@ -42,10 +42,8 @@ WebContentFetcher::WebContentFetcher(Config config, std::shared_ptr<LinkRegistry
                         ? std::make_unique<HostRateLimiter>(config_.rate_limit_strategy,
                                                             config_.host_requests_per_minute)
                         : nullptr),
-      cache_(config_.cache_ttl, config_.cache_max_entries),
-      client_(std::make_unique<HttpClient>(config_.transport)) {}
+      cache_(config_.cache_ttl, config_.cache_max_entries) {}
 
-// Out-of-line so unique_ptr<HttpClient> sees a complete type (http_client.hpp).
 WebContentFetcher::~WebContentFetcher() = default;
 
 void WebContentFetcher::guard_url(const std::string& url) const {
@@ -57,10 +55,11 @@ std::string WebContentFetcher::fetch(const std::string& url) {
     std::string current = url;
     for (int i = 0; i <= kMaxRedirects; ++i) {
         guard_url(current);
-        HttpResponse resp = client_->get(current, {{"User-Agent", kFetchUserAgent}}, 30000);
+        HttpResponse resp =
+            http_get(config_.transport, current, {{"User-Agent", kFetchUserAgent}}, 30000);
         if (resp.status == 429) {
             sleep_retry_after(resp.headers);
-            resp = client_->get(current, {{"User-Agent", kFetchUserAgent}}, 30000);
+            resp = http_get(config_.transport, current, {{"User-Agent", kFetchUserAgent}}, 30000);
         }
         if (is_redirect(resp.status) && !resp.location.empty()) {
             current = url_join(current, resp.location);

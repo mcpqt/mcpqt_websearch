@@ -3,7 +3,7 @@
 #include "searcher.hpp"
 
 #include "connect_error.hpp"
-#include "http_client.hpp"
+#include "http_transport.hpp"
 #include "http_status_error.hpp"
 #include "rate_limiter_factory.hpp"
 #include "timeout_error.hpp"
@@ -92,10 +92,8 @@ std::string decode_uddg(const std::string& link) {
 DuckDuckGoSearcher::DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegistry> links)
     : config_(std::move(config)),
       links_(std::move(links)),
-      rate_limiter_(make_rate_limiter(config_.rate_limit_strategy, config_.requests_per_minute)),
-      client_(std::make_unique<HttpClient>(config_.transport)) {}
+      rate_limiter_(make_rate_limiter(config_.rate_limit_strategy, config_.requests_per_minute)) {}
 
-// Out-of-line so unique_ptr<HttpClient> sees a complete type (http_client.hpp).
 DuckDuckGoSearcher::~DuckDuckGoSearcher() = default;
 
 std::string DuckDuckGoSearcher::display_url(const std::string& url) const {
@@ -128,10 +126,11 @@ std::string DuckDuckGoSearcher::request(const std::string& data_query,
     const char* p = lite_safe_search_value(config_.safe_search);
     if (p && *p) data["p"] = p;
 
-    HttpResponse resp = client_->post_form(kBaseUrl, data, search_headers(), 30000);
+    HttpResponse resp =
+        http_post_form(config_.transport, kBaseUrl, data, search_headers(), 30000);
     if (resp.status == 429) {
         sleep_retry_after(resp.headers);
-        resp = client_->post_form(kBaseUrl, data, search_headers(), 30000);
+        resp = http_post_form(config_.transport, kBaseUrl, data, search_headers(), 30000);
     }
     if (resp.status < 200 || resp.status >= 300) {
         throw HttpStatusError(resp.status, resp);

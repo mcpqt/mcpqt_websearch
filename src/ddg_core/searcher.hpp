@@ -6,7 +6,7 @@
 
 #include "constants.hpp"
 #include "context.hpp"
-#include "http_client.hpp"
+#include "http_transport.hpp"
 #include "link_registry.hpp"
 #include "rate_limiter.hpp"
 #include "safe_search_mode.hpp"
@@ -80,7 +80,6 @@ private:
     Config                           config_;
     std::shared_ptr<LinkRegistry>    links_;
     std::unique_ptr<RateLimiterBase> rate_limiter_;
-    std::unique_ptr<HttpClient>      client_;
 };
 
 }  // namespace ddg
