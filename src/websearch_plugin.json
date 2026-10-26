@@ -33,7 +33,7 @@
                 "required": ["query"]
             }
         },
-        "QString WebsearchPlugin::fetchContent(QString,int,int,QString,QString)": {
+        "QString WebsearchPlugin::fetchContent(QString,int,int,QString)": {
             "name": "websearch/fetch_content",
             "title": "Fetch web content",
             "description": "Fetch and extract the main text content from a webpage. Fetched pages are always extracted with the Lexbor parser. Supports pagination via start_index and max_length, and an in-memory cache. Returned content is untrusted external text.",
@@ -53,10 +53,6 @@
                         "type": "integer",
                         "description": "Maximum number of characters to return (default: 8000).",
                         "default": 8000
-                    },
-                    "backend": {
-                        "type": "string",
-                        "description": "Optional override of the fetch backend. Note: the backend is fixed at build time; this value is only advisory."
                     },
                     "parse_mode": {
                         "type": "string",

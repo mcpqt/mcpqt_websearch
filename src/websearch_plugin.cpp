@@ -111,12 +111,6 @@ namespace
         search_backend = ddg::to_lower(ddg::trim(v));
       }
 
-      QString fetch_backend = ddg::kCompiledFetchBackend;
-      if(const QString v = env_str("DDG_FETCH_BACKEND"); !v.isNull())
-      {
-        fetch_backend = ddg::to_lower(ddg::trim(v));
-      }
-
       const int search_rpm = env_int("DDG_SEARCH_RPM", 1).value_or(30);
       const int fetch_rpm = env_int("DDG_FETCH_RPM", 1).value_or(20);
       const int fetch_host_rpm = env_int("DDG_FETCH_HOST_RPM", 0).value_or(0);
@@ -157,7 +151,6 @@ namespace
           = std::make_unique<ddg::DuckDuckGoSearcher>(search_cfg, m_links);
 
       ddg::WebContentFetcher::Config fetch_cfg;
-      fetch_cfg.backend = fetch_backend;
       fetch_cfg.allow_private_urls = env_flag("DDG_ALLOW_PRIVATE_URLS");
       fetch_cfg.transport = transport;
       fetch_cfg.requests_per_minute = fetch_rpm;
@@ -196,15 +189,14 @@ namespace
     }
 
     QString fetchContent(QString url, int start_index, int max_length,
-                         QString backend, QString parse_mode)
+                         QString parse_mode)
     {
       try
       {
-        const QString backend_arg = backend.isEmpty() ? QString() : backend;
         const QString parse_arg = parse_mode.isEmpty() ? QString() : parse_mode;
         return m_fetcher->fetch_and_parse(
             url, m_log, start_index, max_length <= 0 ? 8000 : max_length,
-            backend_arg, parse_arg);
+            parse_arg);
       }
       catch(const std::exception& e)
       {

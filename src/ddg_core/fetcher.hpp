@@ -21,7 +21,6 @@ namespace ddg {
 class WebContentFetcher {
 public:
     struct Config {
-        QString   backend                  = kCompiledFetchBackend;
         bool      allow_private_urls       = false;
         Transport transport;
         int       requests_per_minute      = 20;
@@ -39,7 +38,6 @@ public:
                             const LogFn&   log,
                             int            start_index = 0,
                             int            max_length  = 8000,
-                            const QString& backend     = QString(),
                             const QString& parse_mode  = QString());
 
     [[nodiscard]] const Config& config() const { return m_config; }

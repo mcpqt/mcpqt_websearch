@@ -26,10 +26,8 @@ bool is_redirect(int status) {
     return status == 301 || status == 302 || status == 303 || status == 307 || status == 308;
 }
 
-QString content_cache_key(const QString& url, const QString& backend,
-                          const QString& parse_mode) {
-    return normalize_cache_url(url) + QLatin1Char('|') + backend + QLatin1Char('|') +
-           parse_mode;
+QString content_cache_key(const QString& url, const QString& parse_mode) {
+    return normalize_cache_url(url) + QLatin1Char('|') + parse_mode;
 }
 
 }  // namespace
@@ -84,7 +82,6 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
                                            const LogFn&   log,
                                            int            start_index,
                                            int            max_length,
-                                           const QString& backend,
                                            const QString& parse_mode) {
     QString url = url_in;
     if (is_ref_token(url)) {
@@ -93,28 +90,16 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
         url = resolved;
     }
 
-    const QString effective_backend = backend.isNull() ? m_config.backend : backend;
-    if (!contains(kSupportedFetchBackends, effective_backend)) {
-        return QStringLiteral("Error: Unknown fetch backend '%1'. Supported: %2, %3")
-            .arg(effective_backend)
-            .arg(kSupportedFetchBackends.front())
-            .arg(kSupportedFetchBackends.back());
-    }
     const QString effective_mode =
         to_lower(parse_mode.isNull() ? m_config.parse_mode : parse_mode);
     if (!contains(kSupportedParseModes, effective_mode)) {
         return QStringLiteral("Error: Unknown parse_mode '%1'. Supported: text, main, markdown")
             .arg(effective_mode);
     }
-    if (effective_backend != kCompiledFetchBackend) {
-        log_info(log, QStringLiteral("Requested backend '%1' but this build only includes "
-                                     "'%2'; using the built-in backend.")
-                          .arg(effective_backend, kCompiledFetchBackend));
-    }
 
     try {
         const QString cache_key =
-            m_cache.enabled() ? content_cache_key(url, kCompiledFetchBackend, effective_mode)
+            m_cache.enabled() ? content_cache_key(url, effective_mode)
                               : QString();
         // A cache hit skips guard_url on purpose: an entry only exists after a
         // guarded fetch of the same normalized URL succeeded.
@@ -125,19 +110,17 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
             if (m_host_limiter) m_host_limiter->acquire(url);
             m_rate_limiter->acquire();
 
-            log_info(log, QStringLiteral("Fetching content from: %1 (backend=%2, parse_mode=%3)")
+            log_info(log, QStringLiteral("Fetching content from: %1 (parse_mode=%2)")
                               .arg(url)
-                              .arg(effective_backend)
                               .arg(effective_mode));
 
             const QString html = fetch(url);
             text               = html::html_to_text(html, effective_mode);
             if (!cache_key.isNull()) m_cache.set(cache_key, text);
         } else {
-            log_info(log, QStringLiteral("Cache hit for %1 (backend=%2, parse_mode=%3); "
+            log_info(log, QStringLiteral("Cache hit for %1 (parse_mode=%2); "
                                          "skipping download")
                               .arg(url)
-                              .arg(effective_backend)
                               .arg(effective_mode));
         }
 
