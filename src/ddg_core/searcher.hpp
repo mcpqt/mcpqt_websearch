@@ -5,7 +5,7 @@
 #pragma once
 
 #include "constants.hpp"
-#include "context.hpp"
+#include "log.hpp"
 #include "http_transport.hpp"
 #include "link_registry.hpp"
 #include "rate_limiter.hpp"
@@ -59,7 +59,7 @@ public:
     ~DuckDuckGoSearcher();
 
     std::vector<SearchResult> search(const std::string& query,
-                                     const Context&     ctx,
+                                     const LogFn&       log,
                                      int                max_results = 10,
                                      const std::string& region      = "",
                                      const std::string& timelimit   = "");
@@ -75,7 +75,7 @@ private:
                         const std::string&                        s,
                         const std::string&                        vqd,
                         const std::string&                        timelimit,
-                        const Context&                            ctx);
+                        const LogFn&                            log);
 
     Config                           config_;
     std::shared_ptr<LinkRegistry>    links_;

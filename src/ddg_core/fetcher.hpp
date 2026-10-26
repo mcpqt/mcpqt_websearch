@@ -5,7 +5,7 @@
 #pragma once
 
 #include "constants.hpp"
-#include "context.hpp"
+#include "log.hpp"
 #include "host_rate_limiter.hpp"
 #include "http_transport.hpp"
 #include "link_registry.hpp"
@@ -36,7 +36,7 @@ public:
     ~WebContentFetcher();
 
     std::string fetch_and_parse(const std::string&                url,
-                                const Context&                    ctx,
+                                const LogFn&                      log,
                                 int                               start_index = 0,
                                 int                               max_length  = 8000,
                                 const std::optional<std::string>& backend     = std::nullopt,

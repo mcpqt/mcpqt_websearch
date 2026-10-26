@@ -116,7 +116,7 @@ std::string DuckDuckGoSearcher::request(const std::string& data_query,
                                         const std::string& s,
                                         const std::string& vqd,
                                         const std::string& timelimit,
-                                        const Context&     ctx) {
+                                        const LogFn&       log) {
     std::map<std::string, std::string> data = {
         {"q", data_query},
         {"s", s},
@@ -145,7 +145,7 @@ std::string DuckDuckGoSearcher::request(const std::string& data_query,
         throw HttpStatusError(resp.status, resp);
     }
     if (is_search_block(resp.status, resp.body)) {
-        ctx.info("DuckDuckGo returned a block signal (HTTP " +
+        log_info(log, "DuckDuckGo returned a block signal (HTTP " +
                  std::to_string(resp.status) +
                  ") to this backend; the installed build only includes the '" +
                  std::string(kCompiledFetchBackend) + "' backend.");
@@ -154,7 +154,7 @@ std::string DuckDuckGoSearcher::request(const std::string& data_query,
 }
 
 std::vector<SearchResult> DuckDuckGoSearcher::search(const std::string& query,
-                                                     const Context&     ctx,
+                                                     const LogFn&       log,
                                                      int                max_results,
                                                      const std::string& region,
                                                      const std::string& timelimit) {
@@ -166,11 +166,11 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const std::string& query,
         try {
             effective_timelimit = normalize_timelimit(timelimit);
         } catch (const std::invalid_argument& e) {
-            ctx.error(e.what());
+            log_error(log, e.what());
             return {};
         }
 
-        ctx.info("Searching DuckDuckGo for: " + query +
+        log_info(log, "Searching DuckDuckGo for: " + query +
                  " (SafeSearch: " + safe_search_name(config_.safe_search) +
                  ", Region: " + (effective_region.empty() ? "default" : effective_region) +
                  ", Time: " + (effective_timelimit.empty() ? "any" : effective_timelimit) +
@@ -185,9 +185,9 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const std::string& query,
              page < kMaxPages && static_cast<int>(results.size()) < max_results; ++page) {
             std::string html;
             try {
-                html = request(query, effective_region, s, vqd, effective_timelimit, ctx);
+                html = request(query, effective_region, s, vqd, effective_timelimit, log);
             } catch (const std::runtime_error& e) {
-                ctx.error(e.what());
+                log_error(log, e.what());
                 break;
             }
 
@@ -211,16 +211,16 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const std::string& query,
             vqd = next.vqd;
         }
 
-        ctx.info("Successfully found " + std::to_string(results.size()) + " results");
+        log_info(log, "Successfully found " + std::to_string(results.size()) + " results");
         return results;
     } catch (const TimeoutError&) {
-        ctx.error("Search request timed out");
+        log_error(log, "Search request timed out");
         return {};
     } catch (const HttpError& e) {
-        ctx.error(std::string("HTTP error occurred: ") + e.what());
+        log_error(log, std::string("HTTP error occurred: ") + e.what());
         return {};
     } catch (const std::exception& e) {
-        ctx.error(std::string("Unexpected error during search: ") + e.what());
+        log_error(log, std::string("Unexpected error during search: ") + e.what());
         return {};
     }
 }

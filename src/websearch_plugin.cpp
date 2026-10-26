@@ -7,7 +7,7 @@
 #include "plugin.h"
 
 #include "constants.hpp"
-#include "context.hpp"
+#include "log.hpp"
 #include "fetcher.hpp"
 #include "link_registry.hpp"
 #include "safe_search_mode.hpp"
@@ -93,14 +93,13 @@ namespace
       m_host = host;
       const ddg::Transport transport
           = ddg::make_webio_transport(m_host.callFunc);
-      m_context = ddg::Context(
-          [this](int level, const std::string& message)
-          {
-            if(m_host.log)
-            {
-              m_host.log(level, QString::fromStdString(message));
-            }
-          });
+      m_log = [this](int level, const std::string& message)
+      {
+        if(m_host.log)
+        {
+          m_host.log(level, QString::fromStdString(message));
+        }
+      };
 
       // ---- configuration from DDG_* environment variables ----------------
       std::string safe_search_name = "MODERATE";
@@ -195,7 +194,7 @@ namespace
       try
       {
         const auto results = m_searcher->search(
-            query.toStdString(), m_context,
+            query.toStdString(), m_log,
             max_results <= 0 ? 10 : max_results, region.toStdString(),
             timelimit.toStdString());
         return QString::fromStdString(
@@ -222,7 +221,7 @@ namespace
                   ? std::nullopt
                   : std::optional<std::string>(parse_mode.toStdString());
         return QString::fromStdString(m_fetcher->fetch_and_parse(
-            url.toStdString(), m_context, start_index,
+            url.toStdString(), m_log, start_index,
             max_length <= 0 ? 8000 : max_length, backend_opt, parse_opt));
       }
       catch(const std::exception& e)
@@ -243,7 +242,7 @@ namespace
     }
 
   private:
-    ddg::Context m_context;
+    ddg::LogFn m_log;
     std::shared_ptr<ddg::LinkRegistry> m_links;
     std::unique_ptr<ddg::DuckDuckGoSearcher> m_searcher;
     std::unique_ptr<ddg::WebContentFetcher> m_fetcher;

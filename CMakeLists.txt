@@ -28,7 +28,6 @@ endif()
 
 # ----- ddg core sources ----------------------------------------------------
 set(DDG_CORE_SOURCES
-    src/ddg_core/context.cpp
     src/ddg_core/fetcher.cpp
     src/ddg_core/host_rate_limiter.cpp
     src/ddg_core/webio_transport.cpp
@@ -62,7 +61,6 @@ set(DDG_CORE_HEADERS
     src/ddg_core/blocked_url_error.hpp
     src/ddg_core/connect_error.hpp
     src/ddg_core/constants.hpp
-    src/ddg_core/context.hpp
     src/ddg_core/fetcher.hpp
     src/ddg_core/host_rate_limiter.hpp
     src/ddg_core/html_extract.hpp
@@ -71,6 +69,7 @@ set(DDG_CORE_HEADERS
     src/ddg_core/http_response.hpp
     src/ddg_core/http_status_error.hpp
     src/ddg_core/link_registry.hpp
+    src/ddg_core/log.hpp
     src/ddg_core/rate_limiter_factory.hpp
     src/ddg_core/rate_limiter.hpp
     src/ddg_core/safe_search_mode.hpp
