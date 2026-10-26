@@ -92,7 +92,11 @@ std::string decode_uddg(const std::string& link) {
 DuckDuckGoSearcher::DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegistry> links)
     : config_(std::move(config)),
       links_(std::move(links)),
-      rate_limiter_(make_rate_limiter(config_.rate_limit_strategy, config_.requests_per_minute)) {}
+      rate_limiter_(make_rate_limiter(config_.rate_limit_strategy, config_.requests_per_minute)) {
+    if (!config_.transport) {
+        throw HttpError("no HTTP transport configured");
+    }
+}
 
 DuckDuckGoSearcher::~DuckDuckGoSearcher() = default;
 
@@ -126,11 +130,16 @@ std::string DuckDuckGoSearcher::request(const std::string& data_query,
     const char* p = lite_safe_search_value(config_.safe_search);
     if (p && *p) data["p"] = p;
 
-    HttpResponse resp =
-        http_post_form(config_.transport, kBaseUrl, data, search_headers(), 30000);
+    HttpRequest request;
+    request.is_post    = true;
+    request.url        = kBaseUrl;
+    request.headers    = search_headers();
+    request.form       = data;
+    request.timeout_ms = 30000;
+    HttpResponse resp  = config_.transport(request);
     if (resp.status == 429) {
         sleep_retry_after(resp.headers);
-        resp = http_post_form(config_.transport, kBaseUrl, data, search_headers(), 30000);
+        resp = config_.transport(request);
     }
     if (resp.status < 200 || resp.status >= 300) {
         throw HttpStatusError(resp.status, resp);

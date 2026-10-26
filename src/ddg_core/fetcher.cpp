@@ -42,7 +42,11 @@ WebContentFetcher::WebContentFetcher(Config config, std::shared_ptr<LinkRegistry
                         ? std::make_unique<HostRateLimiter>(config_.rate_limit_strategy,
                                                             config_.host_requests_per_minute)
                         : nullptr),
-      cache_(config_.cache_ttl, config_.cache_max_entries) {}
+      cache_(config_.cache_ttl, config_.cache_max_entries) {
+    if (!config_.transport) {
+        throw HttpError("no HTTP transport configured");
+    }
+}
 
 WebContentFetcher::~WebContentFetcher() = default;
 
@@ -55,11 +59,14 @@ std::string WebContentFetcher::fetch(const std::string& url) {
     std::string current = url;
     for (int i = 0; i <= kMaxRedirects; ++i) {
         guard_url(current);
-        HttpResponse resp =
-            http_get(config_.transport, current, {{"User-Agent", kFetchUserAgent}}, 30000);
+        HttpRequest request;
+        request.url        = current;
+        request.headers    = {{"User-Agent", kFetchUserAgent}};
+        request.timeout_ms = 30000;
+        HttpResponse resp  = config_.transport(request);
         if (resp.status == 429) {
             sleep_retry_after(resp.headers);
-            resp = http_get(config_.transport, current, {{"User-Agent", kFetchUserAgent}}, 30000);
+            resp = config_.transport(request);
         }
         if (is_redirect(resp.status) && !resp.location.empty()) {
             current = url_join(current, resp.location);
