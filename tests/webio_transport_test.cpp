@@ -72,9 +72,9 @@ int main() {
 
         check(call.signature ==
                   QStringLiteral(
-                      "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant)"),
+                      "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant,uint32_t)"),
               QStringLiteral("GET signature"));
-        check(call.args.size() == 2, QStringLiteral("GET argument count"));
+        check(call.args.size() == 3, QStringLiteral("GET argument count"));
         check(call.args.at(0).toString() == QStringLiteral("https://example.com/"),
               QStringLiteral("GET url"));
         const QVariantMap sent_headers = call.args.at(1).toMap();
@@ -111,9 +111,9 @@ int main() {
 
         check(call.signature ==
                   QStringLiteral(
-                      "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant)"),
+                      "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)"),
               QStringLiteral("POST signature"));
-        check(call.args.size() == 3, QStringLiteral("POST argument count"));
+        check(call.args.size() == 4, QStringLiteral("POST argument count"));
         const QVariantMap form = call.args.at(1).toMap();
         check(form.value(QStringLiteral("q")).toString() == QStringLiteral("term"),
               QStringLiteral("POST form"));

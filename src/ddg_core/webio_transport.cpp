@@ -70,14 +70,16 @@ Transport make_webio_transport(HostCallFunc call_func) {
             if (request.is_post) {
                 handle = call_func(
                     QStringLiteral(
-                        "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant)"),
+                        "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)"),
                     { QVariant(url), QVariant(to_variant_map(request.form)),
-                      QVariant(headers) });
+                      QVariant(headers),
+                      QVariant(static_cast<uint>(request.timeout_ms)) });
             } else {
                 handle = call_func(
                     QStringLiteral(
-                        "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant)"),
-                    { QVariant(url), QVariant(headers) });
+                        "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant,uint32_t)"),
+                    { QVariant(url), QVariant(headers),
+                      QVariant(static_cast<uint>(request.timeout_ms)) });
             }
         } catch (const std::exception& e) {
             throw HttpError(QStringLiteral("webio call failed: %1")
