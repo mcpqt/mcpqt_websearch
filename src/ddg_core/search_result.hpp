@@ -4,15 +4,15 @@
 
 #pragma once
 
-#include <string>
+#include <QString>
 
 namespace ddg {
 
 struct SearchResult {
-    std::string title;
-    std::string link;
-    std::string snippet;
-    int         position = 0;
+    QString title;
+    QString link;
+    QString snippet;
+    int     position = 0;
 };
 
 }  // namespace ddg

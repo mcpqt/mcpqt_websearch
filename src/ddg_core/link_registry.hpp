@@ -4,12 +4,12 @@
 
 #pragma once
 
+#include <QMap>
+#include <QMutex>
+#include <QString>
+#include <QStringList>
+
 #include <cstddef>
-#include <list>
-#include <mutex>
-#include <optional>
-#include <string>
-#include <unordered_map>
 
 namespace ddg {
 
@@ -21,23 +21,23 @@ public:
     void        clear();
 
     /// Register `url` and return its `ref://<id>` token.
-    std::string shorten(const std::string& url);
+    QString shorten(const QString& url);
 
-    /// Resolve a `ref://<id>` token (or bare id). Returns nullopt if unknown.
-    std::optional<std::string> resolve(const std::string& token);
+    /// Resolve a `ref://<id>` token (or bare id). Returns a null QString if
+    /// unknown.
+    QString resolve(const QString& token);
 
 private:
     struct Entry {
-        std::string                     url;
-        std::list<std::string>::iterator pos;
+        QString url;
     };
 
     void evict_lru_locked();
 
-    std::size_t                            max_entries_;
-    mutable std::mutex                     mu_;
-    std::unordered_map<std::string, Entry> map_;
-    std::list<std::string>                 order_;  // front = LRU
+    std::size_t          max_entries_;
+    mutable QMutex       mu_;
+    QMap<QString, Entry> map_;
+    QStringList          order_;  // front = LRU
 };
 
 }  // namespace ddg

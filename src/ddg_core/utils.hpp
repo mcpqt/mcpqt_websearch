@@ -6,11 +6,11 @@
 
 #pragma once
 
-#include <map>
+#include <QMap>
+#include <QString>
+#include <QStringList>
+
 #include <optional>
-#include <string>
-#include <unordered_map>
-#include <vector>
 
 namespace ddg {
 
@@ -18,49 +18,45 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-std::string trim(std::string s);
-std::string to_lower(std::string s);
-bool        starts_with_ci(const std::string& haystack, const std::string& needle);
-std::string strip_slashes(std::string s);
-bool        contains(const std::vector<std::string>& v, const std::string& s);
+QString trim(QString s);
+QString to_lower(QString s);
+bool    starts_with_ci(const QString& haystack, const QString& needle);
+QString strip_slashes(QString s);
+bool    contains(const QStringList& v, const QString& s);
 
 /// Collapse runs of whitespace to single spaces, dropping blank lines.
-std::string collapse_whitespace(const std::string& text);
+QString collapse_whitespace(const QString& text);
 
 // ---------------------------------------------------------------------------
 // URLs (backed by QUrl)
 // ---------------------------------------------------------------------------
 
 /// RFC 3986 reference resolution (httpx.URL(base).join(location)).
-std::string url_join(const std::string& base, const std::string& location);
-
-/// application/x-www-form-urlencoded encoding of a key/value map.
-std::string url_form_encode(const std::map<std::string, std::string>& form);
+QString url_join(const QString& base, const QString& location);
 
 /// Lower-cased hostname, or "" if the URL has no host.
-std::string url_hostname(const std::string& url);
+QString url_hostname(const QString& url);
 
 /// Canonicalize a URL for use as a cache key (drop fragment, lowercase host).
-std::string normalize_cache_url(const std::string& url);
+QString normalize_cache_url(const QString& url);
 
 // ---------------------------------------------------------------------------
 // ref:// tokens
 // ---------------------------------------------------------------------------
 
-bool        is_ref_token(const std::string& value);
-std::string unknown_ref_error(const std::string& token);
+bool    is_ref_token(const QString& value);
+QString unknown_ref_error(const QString& token);
 
 // ---------------------------------------------------------------------------
 // Retry-After
 // ---------------------------------------------------------------------------
 
 /// Parse a Retry-After header as seconds. Date-formatted values are ignored.
-std::optional<double> retry_after_seconds(
-    const std::unordered_map<std::string, std::string>& headers);
+std::optional<double> retry_after_seconds(const QMap<QString, QString>& headers);
 
 /// Sleep for Retry-After (capped at 30s) so 429s do not stall the tool.
-double sleep_retry_after(const std::unordered_map<std::string, std::string>& headers,
-                         double                                            default_seconds = 2.0);
+double sleep_retry_after(const QMap<QString, QString>& headers,
+                         double                       default_seconds = 2.0);
 
 // ---------------------------------------------------------------------------
 // SSRF guard
@@ -69,6 +65,6 @@ double sleep_retry_after(const std::unordered_map<std::string, std::string>& hea
 /// Reject non-public fetch targets. Throws BlockedUrlError. Resolves the host
 /// (blocking) and rejects loopback / private / link-local / reserved /
 /// multicast / unspecified destinations.
-void validate_public_url(const std::string& url);
+void validate_public_url(const QString& url);
 
 }  // namespace ddg

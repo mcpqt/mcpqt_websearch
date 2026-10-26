@@ -5,54 +5,54 @@
 #pragma once
 
 #include "constants.hpp"
-#include "log.hpp"
 #include "host_rate_limiter.hpp"
 #include "http_transport.hpp"
 #include "link_registry.hpp"
+#include "log.hpp"
 #include "rate_limiter.hpp"
 #include "ttl_cache.hpp"
 
+#include <QString>
+
 #include <memory>
-#include <optional>
-#include <string>
 
 namespace ddg {
 
 class WebContentFetcher {
 public:
     struct Config {
-        std::string backend                 = kCompiledFetchBackend;
-        bool        allow_private_urls      = false;
-        Transport   transport;
-        int         requests_per_minute     = 20;
-        int         host_requests_per_minute = 0;  // 0 disables the per-host limiter
-        std::string rate_limit_strategy     = "sliding";
-        double      cache_ttl               = 300.0;
-        int         cache_max_entries       = 64;
-        std::string parse_mode              = "text";
+        QString   backend                  = kCompiledFetchBackend;
+        bool      allow_private_urls       = false;
+        Transport transport;
+        int       requests_per_minute      = 20;
+        int       host_requests_per_minute = 0;  // 0 disables the per-host limiter
+        QString   rate_limit_strategy      = QStringLiteral("sliding");
+        double    cache_ttl                = 300.0;
+        int       cache_max_entries        = 64;
+        QString   parse_mode               = QStringLiteral("text");
     };
 
     WebContentFetcher(Config config, std::shared_ptr<LinkRegistry> links);
     ~WebContentFetcher();
 
-    std::string fetch_and_parse(const std::string&                url,
-                                const LogFn&                      log,
-                                int                               start_index = 0,
-                                int                               max_length  = 8000,
-                                const std::optional<std::string>& backend     = std::nullopt,
-                                const std::optional<std::string>& parse_mode  = std::nullopt);
+    QString fetch_and_parse(const QString& url,
+                            const LogFn&   log,
+                            int            start_index = 0,
+                            int            max_length  = 8000,
+                            const QString& backend     = QString(),
+                            const QString& parse_mode  = QString());
 
-    [[nodiscard]] const Config& config() const { return config_; }
+    [[nodiscard]] const Config& config() const { return m_config; }
 
 private:
-    void        guard_url(const std::string& url) const;
-    std::string fetch(const std::string& url);
+    void    guard_url(const QString& url) const;
+    QString fetch(const QString& url);
 
-    Config                           config_;
-    std::shared_ptr<LinkRegistry>    links_;
-    std::unique_ptr<RateLimiterBase> rate_limiter_;
-    std::unique_ptr<HostRateLimiter> host_limiter_;  // null when disabled
-    TTLCache                         cache_;
+    Config                           m_config;
+    std::shared_ptr<LinkRegistry>    m_links;
+    std::unique_ptr<RateLimiterBase> m_rate_limiter;
+    std::unique_ptr<HostRateLimiter> m_host_limiter;  // null when disabled
+    TTLCache                         m_cache;
 };
 
 }  // namespace ddg

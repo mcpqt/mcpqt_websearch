@@ -4,13 +4,13 @@
 
 #pragma once
 
+#include <QMap>
+#include <QMutex>
+#include <QString>
+#include <QStringList>
+
 #include <chrono>
 #include <cstddef>
-#include <list>
-#include <mutex>
-#include <optional>
-#include <string>
-#include <unordered_map>
 
 namespace ddg {
 
@@ -21,24 +21,23 @@ public:
     bool        enabled() const { return ttl_ > 0 && max_entries_ > 0; }
     std::size_t size() const;
 
-    std::optional<std::string> get(const std::string& key);
-    void                       set(const std::string& key, const std::string& value);
+    QString get(const QString& key);
+    void    set(const QString& key, const QString& value);
 
 private:
     using Clock = std::chrono::steady_clock;
     using Time  = Clock::time_point;
 
     struct Entry {
-        Time                            expires;
-        std::string                     value;
-        std::list<std::string>::iterator pos;
+        Time    expires;
+        QString value;
     };
 
-    double                                 ttl_;
-    int                                    max_entries_;
-    mutable std::mutex                     mu_;
-    std::unordered_map<std::string, Entry> store_;
-    std::list<std::string>                 order_;  // front = LRU
+    double               ttl_;
+    int                  max_entries_;
+    mutable QMutex       mu_;
+    QMap<QString, Entry> store_;
+    QStringList          order_;  // front = LRU
 };
 
 }  // namespace ddg

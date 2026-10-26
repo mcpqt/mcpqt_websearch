@@ -5,77 +5,78 @@
 #pragma once
 
 #include "constants.hpp"
-#include "log.hpp"
 #include "http_transport.hpp"
 #include "link_registry.hpp"
+#include "log.hpp"
 #include "rate_limiter.hpp"
 #include "safe_search_mode.hpp"
 #include "search_result.hpp"
 
+#include <QString>
+
 #include <memory>
-#include <string>
 #include <vector>
 
 namespace ddg {
 
 /// Parse a DuckDuckGo HTML results page into SearchResults (no network access).
 /// Exposed as a free function so it can be unit-tested with fixtures.
-std::vector<SearchResult> parse_search_results(const std::string& html, int max_results);
+std::vector<SearchResult> parse_search_results(const QString& html, int max_results);
 
 /// Parse a DuckDuckGo "lite" results page into SearchResults.
-std::vector<SearchResult> parse_lite_results(const std::string& html, int max_results);
+std::vector<SearchResult> parse_lite_results(const QString& html, int max_results);
 
 /// Pagination state carried between "lite" result pages. Only the hidden `s`
 /// field is required by DuckDuckGo; `vqd` is preserved for compatibility with
 /// pages that expose it.
 struct LiteNextPage {
-    std::string s;
-    std::string vqd;
+    QString s;
+    QString vqd;
 };
 
 /// Extract the next-page form parameters from a "lite" results page.
-LiteNextPage extract_lite_next_page(const std::string& html);
+LiteNextPage extract_lite_next_page(const QString& html);
 
 /// Decode a `//duckduckgo.com/l/?uddg=...` redirect wrapper into the real URL.
 /// Non-wrapped links are returned unchanged.
-std::string decode_uddg(const std::string& link);
+QString decode_uddg(const QString& link);
 
 /// True when an HTML-endpoint response is a fingerprint/empty-page block.
-bool is_search_block(int status, const std::string& html);
+bool is_search_block(int status, const QString& html);
 
 class DuckDuckGoSearcher {
 public:
     struct Config {
         SafeSearchMode safe_search          = SafeSearchMode::Moderate;
-        std::string    default_region;
-        std::string    backend              = kCompiledFetchBackend;
+        QString        default_region;
+        QString        backend              = kCompiledFetchBackend;
         Transport      transport;
         int            requests_per_minute  = 30;
-        std::string    rate_limit_strategy  = "sliding";
+        QString        rate_limit_strategy  = QStringLiteral("sliding");
         int            ref_url_threshold    = kDefaultRefUrlThreshold;
     };
 
     DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegistry> links);
     ~DuckDuckGoSearcher();
 
-    std::vector<SearchResult> search(const std::string& query,
-                                     const LogFn&       log,
-                                     int                max_results = 10,
-                                     const std::string& region      = "",
-                                     const std::string& timelimit   = "");
+    std::vector<SearchResult> search(const QString& query,
+                                     const LogFn&   log,
+                                     int            max_results = 10,
+                                     const QString& region      = QString(),
+                                     const QString& timelimit   = QString());
 
-    std::string format_results_for_llm(const std::vector<SearchResult>& results) const;
+    QString format_results_for_llm(const std::vector<SearchResult>& results) const;
 
     [[nodiscard]] const Config& config() const { return config_; }
 
 private:
-    std::string display_url(const std::string& url) const;
-    std::string request(const std::string&                        data_query,
-                        const std::string&                        data_region,
-                        const std::string&                        s,
-                        const std::string&                        vqd,
-                        const std::string&                        timelimit,
-                        const LogFn&                            log);
+    QString display_url(const QString& url) const;
+    QString request(const QString& data_query,
+                    const QString& data_region,
+                    const QString& s,
+                    const QString& vqd,
+                    const QString& timelimit,
+                    const LogFn&   log);
 
     Config                           config_;
     std::shared_ptr<LinkRegistry>    links_;

@@ -4,20 +4,19 @@
 
 #pragma once
 
-#include <string>
-#include <unordered_map>
+#include <QMap>
+#include <QString>
 
 namespace ddg {
 
 struct HttpResponse {
-    int                                          status = 0;
-    std::string                                  body;
-    std::unordered_map<std::string, std::string> headers;  // lower-cased keys
-    std::string                                  location;  // == headers["location"]
+    int                    status = 0;
+    QString                body;
+    QMap<QString, QString> headers;   // lower-cased keys
+    QString                location;  // == headers[QStringLiteral("location")]
 
-    [[nodiscard]] std::string header(const std::string& name) const {
-        auto it = headers.find(name);
-        return it == headers.end() ? std::string{} : it->second;
+    [[nodiscard]] QString header(const QString& name) const {
+        return headers.value(name);
     }
 };
 

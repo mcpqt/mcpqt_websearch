@@ -8,31 +8,32 @@
 
 #include <lexbor/dom/dom.h>
 
-#include <string>
+#include <QString>
+
 #include <vector>
 
 namespace ddg::html {
 
 /// All descendants (document order) matching a CSS selector.
-std::vector<lxb_dom_node_t*> select(lxb_dom_node_t* root, const std::string& selector);
-lxb_dom_node_t*              select_one(lxb_dom_node_t* root, const std::string& selector);
+std::vector<lxb_dom_node_t*> select(lxb_dom_node_t* root, const QString& selector);
+lxb_dom_node_t*              select_one(lxb_dom_node_t* root, const QString& selector);
 
 /// First descendant element with the given tag name (BeautifulSoup `.find`).
-lxb_dom_node_t* find(lxb_dom_node_t* node, const std::string& name);
+lxb_dom_node_t* find(lxb_dom_node_t* node, const QString& name);
 
 /// All descendant elements with the given tag name. `recursive=false` keeps
 /// only direct children. (BeautifulSoup `.find_all`.)
-std::vector<lxb_dom_node_t*> find_all(lxb_dom_node_t* node, const std::string& name,
+std::vector<lxb_dom_node_t*> find_all(lxb_dom_node_t* node, const QString& name,
                                       bool recursive = true);
 
 /// Lowercase local name of an element node, or "" for non-elements.
-std::string tag_name(lxb_dom_node_t* node);
+QString tag_name(lxb_dom_node_t* node);
 
 bool is_element(lxb_dom_node_t* node);
 bool is_text(lxb_dom_node_t* node);
 
 /// Entity-decoded value of an attribute, or "" when absent/non-element.
-std::string attr(lxb_dom_node_t* node, const std::string& name);
-bool        has_attr(lxb_dom_node_t* node, const std::string& name);
+QString attr(lxb_dom_node_t* node, const QString& name);
+bool    has_attr(lxb_dom_node_t* node, const QString& name);
 
 }  // namespace ddg::html

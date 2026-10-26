@@ -2,6 +2,8 @@
 
 #include "ttl_cache.hpp"
 
+#include <QMutexLocker>
+
 namespace ddg {
 
 TTLCache::TTLCache(double ttl_seconds, int max_entries)
@@ -9,53 +11,50 @@ TTLCache::TTLCache(double ttl_seconds, int max_entries)
       max_entries_(max_entries < 0 ? 0 : max_entries) {}
 
 std::size_t TTLCache::size() const {
-    std::lock_guard<std::mutex> lk(mu_);
-    return store_.size();
+    QMutexLocker<QMutex> locker(&mu_);
+    return static_cast<std::size_t>(store_.size());
 }
 
-std::optional<std::string> TTLCache::get(const std::string& key) {
-    if (!enabled()) return std::nullopt;
-    std::lock_guard<std::mutex> lk(mu_);
-    auto it = store_.find(key);
-    if (it == store_.end()) return std::nullopt;
-    if (Clock::now() >= it->second.expires) {
-        order_.erase(it->second.pos);
+QString TTLCache::get(const QString& key) {
+    if (!enabled()) return QString();
+    QMutexLocker<QMutex> locker(&mu_);
+    auto                 it = store_.find(key);
+    if (it == store_.end()) return QString();
+    if (Clock::now() >= it.value().expires) {
+        order_.removeAll(key);
         store_.erase(it);
-        return std::nullopt;
+        return QString();
     }
-    order_.splice(order_.end(), order_, it->second.pos);  // mark most-recently-used
-    return it->second.value;
+    order_.removeAll(key);
+    order_.append(key);  // mark most-recently-used
+    return it.value().value;
 }
 
-void TTLCache::set(const std::string& key, const std::string& value) {
+void TTLCache::set(const QString& key, const QString& value) {
     if (!enabled()) return;
-    std::lock_guard<std::mutex> lk(mu_);
-    const Time now = Clock::now();
+    QMutexLocker<QMutex> locker(&mu_);
+    const Time           now = Clock::now();
 
     // Purge expired entries.
     for (auto it = store_.begin(); it != store_.end();) {
-        if (now >= it->second.expires) {
-            order_.erase(it->second.pos);
+        if (now >= it.value().expires) {
+            order_.removeAll(it.key());
             it = store_.erase(it);
         } else {
             ++it;
         }
     }
 
-    auto it = store_.find(key);
-    if (it != store_.end()) {
-        order_.erase(it->second.pos);
-        store_.erase(it);
+    if (store_.contains(key)) {
+        order_.removeAll(key);
+        store_.remove(key);
     } else if (static_cast<int>(store_.size()) >= max_entries_) {
-        if (!order_.empty()) {
-            store_.erase(order_.front());
-            order_.pop_front();
-        }
+        if (!order_.isEmpty()) store_.remove(order_.takeFirst());
     }
-    order_.push_back(key);
-    store_[key] = Entry{now + std::chrono::duration_cast<Clock::duration>(
-                                  std::chrono::duration<double>(ttl_)),
-                        value, std::prev(order_.end())};
+    order_.append(key);
+    store_.insert(key, Entry{now + std::chrono::duration_cast<Clock::duration>(
+                                     std::chrono::duration<double>(ttl_)),
+                             value});
 }
 
 }  // namespace ddg

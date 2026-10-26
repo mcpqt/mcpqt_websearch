@@ -6,9 +6,10 @@
 
 #include "rate_limiter.hpp"
 
+#include <QMutex>
+
 #include <chrono>
 #include <list>
-#include <mutex>
 
 namespace ddg {
 
@@ -26,7 +27,7 @@ private:
     void purge_locked(Time now);
 
     int             rpm_;
-    std::mutex      mu_;
+    QMutex          mu_;
     std::list<Time> requests_;
 };
 

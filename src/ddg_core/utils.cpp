@@ -7,14 +7,13 @@
 
 #include <QHostAddress>
 #include <QHostInfo>
+#include <QRegularExpression>
 #include <QString>
+#include <QStringList>
 #include <QUrl>
 
 #include <algorithm>
-#include <cctype>
 #include <chrono>
-#include <regex>
-#include <sstream>
 #include <thread>
 
 namespace ddg {
@@ -23,109 +22,66 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-std::string trim(std::string s) {
-    const auto not_space = [](unsigned char c) { return !std::isspace(c); };
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), not_space));
-    s.erase(std::find_if(s.rbegin(), s.rend(), not_space).base(), s.end());
+QString trim(QString s) { return s.trimmed(); }
+
+QString to_lower(QString s) { return s.toLower(); }
+
+bool starts_with_ci(const QString& haystack, const QString& needle) {
+    return haystack.startsWith(needle, Qt::CaseInsensitive);
+}
+
+QString strip_slashes(QString s) {
+    while (s.startsWith(QLatin1Char('/'))) s.remove(0, 1);
+    while (s.endsWith(QLatin1Char('/'))) s.chop(1);
     return s;
 }
 
-std::string to_lower(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(),
-                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-    return s;
-}
+bool contains(const QStringList& v, const QString& s) { return v.contains(s); }
 
-bool starts_with_ci(const std::string& haystack, const std::string& needle) {
-    if (haystack.size() < needle.size()) return false;
-    for (std::size_t i = 0; i < needle.size(); ++i) {
-        if (std::tolower(static_cast<unsigned char>(haystack[i])) !=
-            std::tolower(static_cast<unsigned char>(needle[i]))) {
-            return false;
+QString collapse_whitespace(const QString& text) {
+    QStringList chunks;
+    for (const QString& raw_line : text.split(QLatin1Char('\n'))) {
+        const QString line = raw_line.trimmed();
+        for (const QString& raw_phrase : line.split(QStringLiteral("  "))) {
+            const QString phrase = raw_phrase.trimmed();
+            if (!phrase.isEmpty()) chunks.push_back(phrase);
         }
     }
-    return true;
-}
-
-std::string strip_slashes(std::string s) {
-    std::size_t b = 0, e = s.size();
-    while (b < e && s[b] == '/') ++b;
-    while (e > b && s[e - 1] == '/') --e;
-    return s.substr(b, e - b);
-}
-
-bool contains(const std::vector<std::string>& v, const std::string& s) {
-    return std::find(v.begin(), v.end(), s) != v.end();
-}
-
-std::string collapse_whitespace(const std::string& text) {
-    // lines = (line.strip() for line in text.splitlines())
-    // chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-    // " ".join(chunk for chunk in chunks if chunk)  then  re.sub(r"\s+", " ", ...)
-    std::istringstream       lines(text);
-    std::string              line;
-    std::vector<std::string> chunks;
-    while (std::getline(lines, line)) {
-        line             = trim(line);
-        std::size_t pos  = 0;
-        while (pos <= line.size()) {
-            const std::size_t next = line.find("  ", pos);
-            std::string       phrase =
-                line.substr(pos, next == std::string::npos ? std::string::npos : next - pos);
-            phrase = trim(phrase);
-            if (!phrase.empty()) chunks.push_back(phrase);
-            if (next == std::string::npos) break;
-            pos = next + 2;
-        }
-    }
-    std::string joined;
-    for (std::size_t i = 0; i < chunks.size(); ++i) {
-        if (i) joined += ' ';
-        joined += chunks[i];
-    }
-    joined = std::regex_replace(joined, std::regex("\\s+"), " ");
-    return trim(joined);
+    QString joined = chunks.join(QLatin1Char(' '));
+    joined.replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
+    return joined.trimmed();
 }
 
 // ---------------------------------------------------------------------------
 // URLs
 // ---------------------------------------------------------------------------
 
-std::string url_join(const std::string& base, const std::string& location) {
-    const QUrl b(QString::fromStdString(base));
-    const QUrl r(QString::fromStdString(location));
-    return b.resolved(r).toString().toStdString();
+QString url_join(const QString& base, const QString& location) {
+    return QUrl(base).resolved(QUrl(location)).toString();
 }
 
-std::string url_form_encode(const std::map<std::string, std::string>& form) {
-    std::string out;
-    for (const auto& [k, v] : form) {
-        if (!out.empty()) out += '&';
-        out += QUrl::toPercentEncoding(QString::fromStdString(k)).toStdString();
-        out += '=';
-        out += QUrl::toPercentEncoding(QString::fromStdString(v)).toStdString();
+QString url_hostname(const QString& url) {
+    return QUrl(url).host().toLower();
+}
+
+QString normalize_cache_url(const QString& url) {
+    const QUrl    u(url);
+    const QString scheme =
+        u.scheme().isEmpty() ? QStringLiteral("http") : u.scheme().toLower();
+    const QString host = u.host().toLower();
+    const int     port = u.port(-1);
+
+    QString netloc = host;
+    if (port > 0 && !((scheme == QStringLiteral("http") && port == 80) ||
+                      (scheme == QStringLiteral("https") && port == 443))) {
+        netloc = host + QLatin1Char(':') + QString::number(port);
     }
-    return out;
-}
 
-std::string url_hostname(const std::string& url) {
-    return to_lower(QUrl(QString::fromStdString(url)).host().toStdString());
-}
+    const QString path = u.path().isEmpty() ? QStringLiteral("/") : u.path();
+    const QString query = u.query(QUrl::FullyEncoded);
 
-std::string normalize_cache_url(const std::string& url) {
-    const QUrl u(QString::fromStdString(url));
-    const std::string scheme = (u.scheme().isEmpty() ? "http" : u.scheme().toLower()).toStdString();
-    const std::string host   = u.host().toLower().toStdString();
-    const int         port   = u.port(-1);
-    std::string       netloc = host;
-    if (port > 0 && !((scheme == "http" && port == 80) || (scheme == "https" && port == 443))) {
-        netloc = host + ":" + std::to_string(port);
-    }
-    const std::string path  = (u.path().isEmpty() ? "/" : u.path()).toStdString();
-    const QString     query = u.query(QUrl::FullyEncoded);
-
-    std::string out = scheme + "://" + netloc + path;
-    if (!query.isEmpty()) out += "?" + query.toStdString();  // fragment intentionally dropped
+    QString out = scheme + QStringLiteral("://") + netloc + path;
+    if (!query.isEmpty()) out += QLatin1Char('?') + query;  // fragment intentionally dropped
     return out;
 }
 
@@ -133,36 +89,34 @@ std::string normalize_cache_url(const std::string& url) {
 // ref:// tokens
 // ---------------------------------------------------------------------------
 
-bool is_ref_token(const std::string& value) {
+bool is_ref_token(const QString& value) {
     return starts_with_ci(trim(value), kRefScheme);
 }
 
-std::string unknown_ref_error(const std::string& token) {
-    return "Error: Unknown link reference '" + trim(token) + "'. Only ref:// tokens "
-           "returned by this server's search results can be expanded, and they are "
-           "forgotten when the server restarts. Run the search again to get a fresh token.";
+QString unknown_ref_error(const QString& token) {
+    return QStringLiteral(
+               "Error: Unknown link reference '%1'. Only ref:// tokens returned by "
+               "this server's search results can be expanded, and they are forgotten "
+               "when the server restarts. Run the search again to get a fresh token.")
+        .arg(trim(token));
 }
 
 // ---------------------------------------------------------------------------
 // Retry-After
 // ---------------------------------------------------------------------------
 
-std::optional<double> retry_after_seconds(
-    const std::unordered_map<std::string, std::string>& headers) {
-    auto it = headers.find("retry-after");
-    if (it == headers.end()) return std::nullopt;
-    try {
-        double v = std::stod(trim(it->second));
-        return std::max(0.0, v);
-    } catch (...) {
-        return std::nullopt;  // includes date-formatted values
-    }
+std::optional<double> retry_after_seconds(const QMap<QString, QString>& headers) {
+    const auto it = headers.constFind(QStringLiteral("retry-after"));
+    if (it == headers.cend()) return std::nullopt;
+    bool         ok = false;
+    const double v  = it.value().trimmed().toDouble(&ok);
+    if (!ok) return std::nullopt;  // includes date-formatted values
+    return std::max(0.0, v);
 }
 
-double sleep_retry_after(const std::unordered_map<std::string, std::string>& headers,
-                         double                                            default_seconds) {
+double sleep_retry_after(const QMap<QString, QString>& headers, double default_seconds) {
     double wait = retry_after_seconds(headers).value_or(default_seconds);
-    wait = std::min(wait, 30.0);
+    wait        = std::min(wait, 30.0);
     if (wait > 0) std::this_thread::sleep_for(std::chrono::duration<double>(wait));
     return wait;
 }
@@ -214,37 +168,40 @@ bool is_disallowed(const QHostAddress& addr) {
 
 }  // namespace
 
-void validate_public_url(const std::string& url) {
-    const QUrl        u(QString::fromStdString(url));
-    const std::string scheme = u.scheme().toLower().toStdString();
-    if (scheme != "http" && scheme != "https") {
-        throw BlockedUrlError("unsupported URL scheme '" + u.scheme().toStdString() +
-                              "://' (only http and https are allowed)");
-    }
-    const QString host_q = u.host();
-    if (host_q.isEmpty()) throw BlockedUrlError("URL has no host");
-    const std::string host = host_q.toStdString();
-
-    const std::string lowered = to_lower(host);
-    if (lowered == "localhost" || lowered.ends_with(".localhost")) {
-        throw BlockedUrlError("refusing to fetch loopback host '" + host + "'");
+void validate_public_url(const QString& url) {
+    const QUrl    u(url);
+    const QString scheme = u.scheme().toLower();
+    if (scheme != QStringLiteral("http") && scheme != QStringLiteral("https")) {
+        throw BlockedUrlError(
+            QStringLiteral("unsupported URL scheme '%1://' (only http and https are allowed)")
+                .arg(u.scheme()));
     }
 
-    const int port = u.port(scheme == "https" ? 443 : 80);
+    const QString host = u.host();
+    if (host.isEmpty()) throw BlockedUrlError(QStringLiteral("URL has no host"));
+
+    const QString lowered = host.toLower();
+    if (lowered == QStringLiteral("localhost") ||
+        lowered.endsWith(QStringLiteral(".localhost"))) {
+        throw BlockedUrlError(
+            QStringLiteral("refusing to fetch loopback host '%1'").arg(host));
+    }
+
+    const int port = u.port(scheme == QStringLiteral("https") ? 443 : 80);
     if (port <= 0 || port > 65535) {
-        throw BlockedUrlError("invalid port in URL '" + url + "'");
+        throw BlockedUrlError(QStringLiteral("invalid port in URL '%1'").arg(url));
     }
 
-    const QHostInfo info = QHostInfo::fromName(host_q);
+    const QHostInfo info = QHostInfo::fromName(host);
     if (info.error() != QHostInfo::NoError || info.addresses().isEmpty()) {
-        throw BlockedUrlError("could not resolve host '" + host + "': " +
-                              info.errorString().toStdString());
+        throw BlockedUrlError(QStringLiteral("could not resolve host '%1': %2")
+                                  .arg(host, info.errorString()));
     }
     for (const QHostAddress& addr : info.addresses()) {
         if (is_disallowed(addr)) {
-            throw BlockedUrlError("refusing to fetch '" + host +
-                                  "' — it resolves to non-public address " +
-                                  addr.toString().toStdString());
+            throw BlockedUrlError(
+                QStringLiteral("refusing to fetch '%1' — it resolves to non-public address %2")
+                    .arg(host, addr.toString()));
         }
     }
 }

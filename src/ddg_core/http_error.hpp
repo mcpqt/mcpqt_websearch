@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include <stdexcept>
+#include "error.hpp"
 
 namespace ddg {
 
-struct HttpError : std::runtime_error {
-    using std::runtime_error::runtime_error;
+struct HttpError : Error {
+    using Error::Error;
 };
 
 }  // namespace ddg

@@ -7,67 +7,58 @@
 #include "plugin.h"
 
 #include "constants.hpp"
-#include "log.hpp"
 #include "fetcher.hpp"
 #include "link_registry.hpp"
+#include "log.hpp"
 #include "safe_search_mode.hpp"
 #include "searcher.hpp"
 #include "utils.hpp"
 #include "webio_transport.hpp"
 
+#include <QByteArray>
 #include <QObject>
 #include <QString>
 #include <QVariant>
 
-#include <cstdlib>
+#include <exception>
 #include <memory>
 #include <optional>
-#include <string>
 
 namespace
 {
 
-  std::optional<std::string> env_str(const char* name)
+  QString env_str(const char* name)
   {
-    const char* v = std::getenv(name);
-    if(!v || !*v)
-    {
-      return std::nullopt;
-    }
-    return std::string(v);
+    const QByteArray value = qgetenv(name);
+    return value.isEmpty() ? QString() : QString::fromLocal8Bit(value);
   }
 
   bool env_flag(const char* name)
   {
-    const auto v = env_str(name);
-    if(!v)
+    const QString v = env_str(name);
+    if(v.isNull())
     {
       return false;
     }
-    const std::string s = ddg::to_lower(ddg::trim(*v));
-    return s == "1" || s == "true" || s == "yes" || s == "on";
+    const QString s = ddg::to_lower(ddg::trim(v));
+    return s == QStringLiteral("1") || s == QStringLiteral("true")
+           || s == QStringLiteral("yes") || s == QStringLiteral("on");
   }
 
   std::optional<int> env_int(const char* name, int minimum)
   {
-    const auto v = env_str(name);
-    if(!v)
+    const QString v = env_str(name);
+    if(v.isNull())
     {
       return std::nullopt;
     }
-    try
-    {
-      const int value = std::stoi(ddg::trim(*v));
-      if(value < minimum)
-      {
-        return std::nullopt;
-      }
-      return value;
-    }
-    catch(...)
+    bool ok = false;
+    const int value = v.trimmed().toInt(&ok);
+    if(!ok || value < minimum)
     {
       return std::nullopt;
     }
+    return value;
   }
 
   class WebsearchPlugin : public mcp::PluginInterface
@@ -93,37 +84,37 @@ namespace
       m_host = host;
       const ddg::Transport transport
           = ddg::make_webio_transport(m_host.callFunc);
-      m_log = [this](int level, const std::string& message)
+      m_log = [this](int level, const QString& message)
       {
         if(m_host.log)
         {
-          m_host.log(level, QString::fromStdString(message));
+          m_host.log(level, message);
         }
       };
 
       // ---- configuration from DDG_* environment variables ----------------
-      std::string safe_search_name = "MODERATE";
-      if(const auto v = env_str("DDG_SAFE_SEARCH"))
+      QString safe_search_name = QStringLiteral("MODERATE");
+      if(const QString v = env_str("DDG_SAFE_SEARCH"); !v.isNull())
       {
-        safe_search_name = ddg::to_lower(ddg::trim(*v));
+        safe_search_name = ddg::to_lower(ddg::trim(v));
       }
 
-      std::string region = "wt-wt";
-      if(const auto v = env_str("DDG_REGION"))
+      QString region = QStringLiteral("wt-wt");
+      if(const QString v = env_str("DDG_REGION"); !v.isNull())
       {
-        region = ddg::trim(*v);
+        region = ddg::trim(v);
       }
 
-      std::string search_backend = ddg::kCompiledFetchBackend;
-      if(const auto v = env_str("DDG_SEARCH_BACKEND"))
+      QString search_backend = ddg::kCompiledFetchBackend;
+      if(const QString v = env_str("DDG_SEARCH_BACKEND"); !v.isNull())
       {
-        search_backend = ddg::to_lower(ddg::trim(*v));
+        search_backend = ddg::to_lower(ddg::trim(v));
       }
 
-      std::string fetch_backend = ddg::kCompiledFetchBackend;
-      if(const auto v = env_str("DDG_FETCH_BACKEND"))
+      QString fetch_backend = ddg::kCompiledFetchBackend;
+      if(const QString v = env_str("DDG_FETCH_BACKEND"); !v.isNull())
       {
-        fetch_backend = ddg::to_lower(ddg::trim(*v));
+        fetch_backend = ddg::to_lower(ddg::trim(v));
       }
 
       const int search_rpm = env_int("DDG_SEARCH_RPM", 1).value_or(30);
@@ -136,16 +127,16 @@ namespace
           = env_int("DDG_REF_URL_THRESHOLD", 0).value_or(
               ddg::kDefaultRefUrlThreshold);
 
-      std::string rate_strategy = "sliding";
-      if(const auto v = env_str("DDG_RATE_LIMIT_STRATEGY"))
+      QString rate_strategy = QStringLiteral("sliding");
+      if(const QString v = env_str("DDG_RATE_LIMIT_STRATEGY"); !v.isNull())
       {
-        rate_strategy = ddg::to_lower(ddg::trim(*v));
+        rate_strategy = ddg::to_lower(ddg::trim(v));
       }
 
-      std::string parse_mode = "text";
-      if(const auto v = env_str("DDG_PARSE_MODE"))
+      QString parse_mode = QStringLiteral("text");
+      if(const QString v = env_str("DDG_PARSE_MODE"); !v.isNull())
       {
-        parse_mode = ddg::to_lower(ddg::trim(*v));
+        parse_mode = ddg::to_lower(ddg::trim(v));
       }
 
       const ddg::SafeSearchMode mode
@@ -194,16 +185,13 @@ namespace
       try
       {
         const auto results = m_searcher->search(
-            query.toStdString(), m_log,
-            max_results <= 0 ? 10 : max_results, region.toStdString(),
-            timelimit.toStdString());
-        return QString::fromStdString(
-            m_searcher->format_results_for_llm(results));
+            query, m_log, max_results <= 0 ? 10 : max_results, region, timelimit);
+        return m_searcher->format_results_for_llm(results);
       }
       catch(const std::exception& e)
       {
         return QStringLiteral("An error occurred while searching: ")
-               + QString::fromStdString(e.what());
+               + QString::fromUtf8(e.what());
       }
     }
 
@@ -212,33 +200,27 @@ namespace
     {
       try
       {
-        const std::optional<std::string> backend_opt
-            = backend.isEmpty()
-                  ? std::nullopt
-                  : std::optional<std::string>(backend.toStdString());
-        const std::optional<std::string> parse_opt
-            = parse_mode.isEmpty()
-                  ? std::nullopt
-                  : std::optional<std::string>(parse_mode.toStdString());
-        return QString::fromStdString(m_fetcher->fetch_and_parse(
-            url.toStdString(), m_log, start_index,
-            max_length <= 0 ? 8000 : max_length, backend_opt, parse_opt));
+        const QString backend_arg = backend.isEmpty() ? QString() : backend;
+        const QString parse_arg = parse_mode.isEmpty() ? QString() : parse_mode;
+        return m_fetcher->fetch_and_parse(
+            url, m_log, start_index, max_length <= 0 ? 8000 : max_length,
+            backend_arg, parse_arg);
       }
       catch(const std::exception& e)
       {
         return QStringLiteral("An error occurred while fetching: ")
-               + QString::fromStdString(e.what());
+               + QString::fromUtf8(e.what());
       }
     }
 
     QString expandLink(QString token)
     {
-      if(const auto url = m_links->resolve(token.toStdString()))
+      const QString url = m_links->resolve(token);
+      if(!url.isNull())
       {
-        return QString::fromStdString(*url);
+        return url;
       }
-      return QString::fromStdString(
-          ddg::unknown_ref_error(token.toStdString()));
+      return ddg::unknown_ref_error(token);
     }
 
   private:

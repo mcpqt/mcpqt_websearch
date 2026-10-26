@@ -5,6 +5,9 @@
 #include <lexbor/css/css.h>
 #include <lexbor/selectors/selectors.h>
 
+#include <QByteArray>
+#include <QString>
+
 #include <cstring>
 
 namespace ddg::html {
@@ -15,23 +18,26 @@ lxb_status_t collect_cb(lxb_dom_node_t* node, lxb_css_selector_specificity_t, vo
     return LXB_STATUS_OK;
 }
 
-std::string to_str(const lxb_char_t* data, size_t len) {
-    if (!data) return {};
-    return std::string(reinterpret_cast<const char*>(data), len);
+QString to_str(const lxb_char_t* data, size_t len) {
+    if (!data) return QString();
+    return QString::fromUtf8(reinterpret_cast<const char*>(data), static_cast<int>(len));
 }
 
-bool tag_is(lxb_dom_node_t* node, const std::string& name) {
+bool tag_is(lxb_dom_node_t* node, const QString& name) {
     if (!is_element(node)) return false;
-    size_t            len = 0;
-    const lxb_char_t* ln  = lxb_dom_element_local_name(lxb_dom_interface_element(node), &len);
-    return ln && len == name.size() && std::memcmp(ln, name.data(), len) == 0;
+    const QByteArray utf8 = name.toUtf8();
+    size_t           len  = 0;
+    const lxb_char_t* ln =
+        lxb_dom_element_local_name(lxb_dom_interface_element(node), &len);
+    return ln && len == static_cast<size_t>(utf8.size()) &&
+           std::memcmp(ln, utf8.constData(), len) == 0;
 }
 
 }  // namespace
 
-std::vector<lxb_dom_node_t*> select(lxb_dom_node_t* root, const std::string& selector) {
+std::vector<lxb_dom_node_t*> select(lxb_dom_node_t* root, const QString& selector) {
     std::vector<lxb_dom_node_t*> out;
-    if (!root || selector.empty()) return out;
+    if (!root || selector.isEmpty()) return out;
 
     lxb_css_parser_t* parser = lxb_css_parser_create();
     if (!parser) return out;
@@ -40,8 +46,10 @@ std::vector<lxb_dom_node_t*> select(lxb_dom_node_t* root, const std::string& sel
         return out;
     }
 
+    const QByteArray utf8 = selector.toUtf8();
     lxb_css_selector_list_t* list = lxb_css_selectors_parse(
-        parser, reinterpret_cast<const lxb_char_t*>(selector.data()), selector.size());
+        parser, reinterpret_cast<const lxb_char_t*>(utf8.constData()),
+        static_cast<size_t>(utf8.size()));
     if (!list || parser->status != LXB_STATUS_OK) {
         if (list) lxb_css_selector_list_destroy_memory(list);
         lxb_css_parser_destroy(parser, true);
@@ -61,12 +69,12 @@ std::vector<lxb_dom_node_t*> select(lxb_dom_node_t* root, const std::string& sel
     return out;
 }
 
-lxb_dom_node_t* select_one(lxb_dom_node_t* root, const std::string& selector) {
+lxb_dom_node_t* select_one(lxb_dom_node_t* root, const QString& selector) {
     auto matches = select(root, selector);
     return matches.empty() ? nullptr : matches.front();
 }
 
-std::vector<lxb_dom_node_t*> find_all(lxb_dom_node_t* node, const std::string& name,
+std::vector<lxb_dom_node_t*> find_all(lxb_dom_node_t* node, const QString& name,
                                       bool recursive) {
     if (!node) return {};
     if (recursive) return select(node, name);
@@ -78,7 +86,7 @@ std::vector<lxb_dom_node_t*> find_all(lxb_dom_node_t* node, const std::string& n
     return out;
 }
 
-lxb_dom_node_t* find(lxb_dom_node_t* node, const std::string& name) {
+lxb_dom_node_t* find(lxb_dom_node_t* node, const QString& name) {
     if (!node) return nullptr;
     if (tag_is(node, name)) return node;
     for (lxb_dom_node_t* c = node->first_child; c; c = c->next) {
@@ -87,10 +95,11 @@ lxb_dom_node_t* find(lxb_dom_node_t* node, const std::string& name) {
     return nullptr;
 }
 
-std::string tag_name(lxb_dom_node_t* node) {
-    if (!is_element(node)) return {};
+QString tag_name(lxb_dom_node_t* node) {
+    if (!is_element(node)) return QString();
     size_t            len = 0;
-    const lxb_char_t* ln  = lxb_dom_element_local_name(lxb_dom_interface_element(node), &len);
+    const lxb_char_t* ln =
+        lxb_dom_element_local_name(lxb_dom_interface_element(node), &len);
     return to_str(ln, len);
 }
 
@@ -103,20 +112,24 @@ bool is_text(lxb_dom_node_t* node) {
                     node->type == LXB_DOM_NODE_TYPE_CDATA_SECTION);
 }
 
-std::string attr(lxb_dom_node_t* node, const std::string& name) {
-    if (!is_element(node)) return {};
-    size_t            len = 0;
-    const lxb_char_t* v   = lxb_dom_element_get_attribute(
+QString attr(lxb_dom_node_t* node, const QString& name) {
+    if (!is_element(node)) return QString();
+    const QByteArray utf8 = name.toUtf8();
+    size_t           len = 0;
+    const lxb_char_t* v = lxb_dom_element_get_attribute(
         lxb_dom_interface_element(node),
-        reinterpret_cast<const lxb_char_t*>(name.data()), name.size(), &len);
+        reinterpret_cast<const lxb_char_t*>(utf8.constData()),
+        static_cast<size_t>(utf8.size()), &len);
     return to_str(v, len);
 }
 
-bool has_attr(lxb_dom_node_t* node, const std::string& name) {
+bool has_attr(lxb_dom_node_t* node, const QString& name) {
     if (!is_element(node)) return false;
+    const QByteArray utf8 = name.toUtf8();
     return lxb_dom_element_has_attribute(
         lxb_dom_interface_element(node),
-        reinterpret_cast<const lxb_char_t*>(name.data()), name.size());
+        reinterpret_cast<const lxb_char_t*>(utf8.constData()),
+        static_cast<size_t>(utf8.size()));
 }
 
 }  // namespace ddg::html

@@ -6,16 +6,17 @@
 
 #include "rate_limiter.hpp"
 
+#include <QMutex>
+
 #include <chrono>
-#include <mutex>
 #include <optional>
 
 namespace ddg {
 
 class TokenBucketLimiter : public RateLimiterBase {
 public:
-    explicit TokenBucketLimiter(int                     requests_per_minute,
-                                std::optional<double>   burst = std::nullopt);
+    explicit TokenBucketLimiter(int                   requests_per_minute,
+                                std::optional<double> burst = std::nullopt);
 
     void acquire() override;
     bool idle() override;
@@ -26,12 +27,12 @@ private:
 
     void refill_locked();
 
-    int        rpm_;
-    double     rate_;
-    double     burst_;
-    double     tokens_;
-    Time       updated_ = Clock::now();
-    std::mutex mu_;
+    int      rpm_;
+    double   rate_;
+    double   burst_;
+    double   tokens_;
+    Time     updated_ = Clock::now();
+    QMutex   mu_;
 };
 
 }  // namespace ddg

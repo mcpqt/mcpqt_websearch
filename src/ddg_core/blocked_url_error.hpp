@@ -4,12 +4,12 @@
 
 #pragma once
 
-#include <stdexcept>
+#include "error.hpp"
 
 namespace ddg {
 
-struct BlockedUrlError : std::runtime_error {
-    using std::runtime_error::runtime_error;
+struct BlockedUrlError : Error {
+    using Error::Error;
 };
 
 }  // namespace ddg

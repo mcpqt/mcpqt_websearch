@@ -2,14 +2,16 @@
 
 #include "html_extract.hpp"
 
+#include "error.hpp"
 #include "html_document.hpp"
 #include "html_query.hpp"
 #include "html_text.hpp"
 #include "utils.hpp"
 
-#include <cctype>
-#include <regex>
-#include <stdexcept>
+#include <QRegularExpression>
+#include <QString>
+#include <QStringList>
+
 #include <vector>
 
 namespace ddg::html {
@@ -21,13 +23,17 @@ const char* const kMainSelectors[] = {
     ".post-body", ".markdown-body",
 };
 
-const std::vector<std::string> kTextChromeTags = {"script", "style", "nav", "header", "footer"};
-const std::vector<std::string> kMainChromeTags = {"script", "style", "nav", "header",
-                                                  "footer", "aside", "form", "noscript"};
+const QStringList kTextChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
+                                     QStringLiteral("nav"), QStringLiteral("header"),
+                                     QStringLiteral("footer")};
+const QStringList kMainChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
+                                     QStringLiteral("nav"), QStringLiteral("header"),
+                                     QStringLiteral("footer"), QStringLiteral("aside"),
+                                     QStringLiteral("form"), QStringLiteral("noscript")};
 
-void strip_chrome(lxb_dom_node_t* root, const std::vector<std::string>& tags) {
+void strip_chrome(lxb_dom_node_t* root, const QStringList& tags) {
     std::vector<lxb_dom_node_t*> to_remove;
-    for (const auto& t : tags) {
+    for (const QString& t : tags) {
         auto found = find_all(root, t, true);
         to_remove.insert(to_remove.end(), found.begin(), found.end());
     }
@@ -36,116 +42,134 @@ void strip_chrome(lxb_dom_node_t* root, const std::vector<std::string>& tags) {
 
 lxb_dom_node_t* select_main_root(lxb_dom_node_t* root) {
     for (const char* selector : kMainSelectors) {
-        auto* found = select_one(root, selector);
-        if (found && get_text(found, " ", true).size() >= 40) return found;
+        auto* found = select_one(root, QString::fromLatin1(selector));
+        if (found && get_text(found, QStringLiteral(" "), true).size() >= 40) return found;
     }
-    if (auto* body = find(root, "body")) return body;
+    if (auto* body = find(root, QStringLiteral("body"))) return body;
     return root;
 }
 
-std::string safe_markdown_href(const std::string& href) {
-    std::string cleaned;
-    for (char ch : href) {
-        const unsigned char uc = static_cast<unsigned char>(ch);
-        if (uc >= ' ' && ch != '\r' && ch != '\n') cleaned += ch;
+QString safe_markdown_href(const QString& href) {
+    QString cleaned;
+    for (QChar ch : href) {
+        if (ch >= QLatin1Char(' ') && ch != QLatin1Char('\r') && ch != QLatin1Char('\n'))
+            cleaned += ch;
     }
-    cleaned = trim(std::move(cleaned));  // `.strip()`
-    if (cleaned.empty()) return {};
-    for (char ch : cleaned) {
-        if (std::isspace(static_cast<unsigned char>(ch))) return {};
+    cleaned = cleaned.trimmed();  // `.strip()`
+    if (cleaned.isEmpty()) return QString();
+    for (QChar ch : cleaned) {
+        if (ch.isSpace()) return QString();
     }
-    const std::size_t colon = cleaned.find("://");
-    if (colon == std::string::npos) return {};
-    const std::string scheme = to_lower(cleaned.substr(0, colon));
-    if (scheme != "http" && scheme != "https") return {};
+    const qsizetype colon = cleaned.indexOf(QStringLiteral("://"));
+    if (colon == -1) return QString();
+    const QString scheme = cleaned.left(colon).toLower();
+    if (scheme != QStringLiteral("http") && scheme != QStringLiteral("https"))
+        return QString();
     // A netloc is required (chars between "://" and the next '/').
-    if (colon + 3 >= cleaned.size()) return {};
-    if (cleaned[colon + 3] == '/') return {};
+    if (colon + 3 >= cleaned.size()) return QString();
+    if (cleaned.at(colon + 3) == QLatin1Char('/')) return QString();
 
-    std::string out;
-    for (char ch : cleaned) out += (ch == ')') ? "%29" : std::string(1, ch);
+    QString out;
+    for (QChar ch : cleaned) {
+        if (ch == QLatin1Char(')'))
+            out += QStringLiteral("%29");
+        else
+            out += ch;
+    }
     return out;
 }
 
-std::string safe_markdown_label(const std::string& label) {
-    std::string out;
-    for (char ch : label) {
-        if (ch == '\r' || ch == '\n' || ch == '[' || ch == ']') continue;
+QString safe_markdown_label(const QString& label) {
+    QString out;
+    for (QChar ch : label) {
+        if (ch == QLatin1Char('\r') || ch == QLatin1Char('\n') ||
+            ch == QLatin1Char('[') || ch == QLatin1Char(']'))
+            continue;
         out += ch;
     }
-    return trim(std::move(out));
+    return out.trimmed();
 }
 
-std::string inline_markdown(lxb_dom_node_t* el);
+QString inline_markdown(lxb_dom_node_t* el);
 
-std::string inline_markdown(lxb_dom_node_t* el) {
+QString inline_markdown(lxb_dom_node_t* el) {
     if (is_text(el)) {
-        return std::regex_replace(get_text(el, "", false), std::regex("\\s+"), " ");
+        return get_text(el, QString(), false)
+            .replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
     }
-    const std::string name = tag_name(el);
-    if (name == "br") return "\n";
-    if (name == "a") {
-        const std::string href  = safe_markdown_href(attr(el, "href"));
-        const std::string label = safe_markdown_label(get_text(el, " ", true));
-        if (!href.empty() && !label.empty()) return "[" + label + "](" + href + ")";
+    const QString name = tag_name(el);
+    if (name == QStringLiteral("br")) return QStringLiteral("\n");
+    if (name == QStringLiteral("a")) {
+        const QString href  = safe_markdown_href(attr(el, QStringLiteral("href")));
+        const QString label = safe_markdown_label(get_text(el, QStringLiteral(" "), true));
+        if (!href.isEmpty() && !label.isEmpty())
+            return QStringLiteral("[") + label + QStringLiteral("](") + href +
+                   QStringLiteral(")");
         return label;
     }
-    if (name == "code") return "`" + get_text(el, "", false) + "`";
-    if (name == "strong" || name == "b") {
-        const std::string inner = get_text(el, " ", true);
-        return inner.empty() ? std::string{} : "**" + inner + "**";
+    if (name == QStringLiteral("code"))
+        return QStringLiteral("`") + get_text(el, QString(), false) + QStringLiteral("`");
+    if (name == QStringLiteral("strong") || name == QStringLiteral("b")) {
+        const QString inner = get_text(el, QStringLiteral(" "), true);
+        return inner.isEmpty() ? QString() : QStringLiteral("**") + inner + QStringLiteral("**");
     }
-    if (name == "em" || name == "i") {
-        const std::string inner = get_text(el, " ", true);
-        return inner.empty() ? std::string{} : "*" + inner + "*";
+    if (name == QStringLiteral("em") || name == QStringLiteral("i")) {
+        const QString inner = get_text(el, QStringLiteral(" "), true);
+        return inner.isEmpty() ? QString() : QStringLiteral("*") + inner + QStringLiteral("*");
     }
-    std::string out;
+    QString out;
     for (lxb_dom_node_t* child = el->first_child; child; child = child->next) {
         out += inline_markdown(child);
     }
     return out;
 }
 
-void render_markdown(lxb_dom_node_t* el, std::vector<std::string>& parts) {
+void render_markdown(lxb_dom_node_t* el, QStringList& parts) {
     if (is_text(el)) {
-        std::string text = trim(get_text(el, "", false));
-        if (!text.empty()) parts.push_back(std::move(text));
+        const QString text = get_text(el, QString(), false).trimmed();
+        if (!text.isEmpty()) parts.push_back(text);
         return;
     }
-    const std::string name = tag_name(el);
-    if (name.size() == 2 && name[0] == 'h' && name[1] >= '1' && name[1] <= '6') {
-        parts.push_back(std::string(name[1] - '0', '#') + " " + get_text(el, " ", true));
-        parts.push_back("");
-    } else if (name == "p") {
-        std::string text = trim(inline_markdown(el));
-        if (!text.empty()) {
-            parts.push_back(std::move(text));
-            parts.push_back("");
+    const QString name = tag_name(el);
+    if (name.size() == 2 && name.at(0) == QLatin1Char('h') &&
+        name.at(1) >= QLatin1Char('1') && name.at(1) <= QLatin1Char('6')) {
+        const QChar level = name.at(1);
+        parts.push_back(QString(level.digitValue(), QLatin1Char('#')) + QLatin1Char(' ') +
+                        get_text(el, QStringLiteral(" "), true));
+        parts.push_back(QString());
+    } else if (name == QStringLiteral("p")) {
+        const QString text = inline_markdown(el).trimmed();
+        if (!text.isEmpty()) {
+            parts.push_back(text);
+            parts.push_back(QString());
         }
-    } else if (name == "pre") {
-        std::string code = get_text(el, "", false);
-        if (!code.empty() && code.back() == '\n') code.pop_back();
-        parts.push_back("```");
+    } else if (name == QStringLiteral("pre")) {
+        QString code = get_text(el, QString(), false);
+        if (!code.isEmpty() && code.endsWith(QLatin1Char('\n'))) code.chop(1);
+        parts.push_back(QStringLiteral("```"));
         parts.push_back(code);
-        parts.push_back("```");
-        parts.push_back("");
-    } else if (name == "ul" || name == "ol") {
+        parts.push_back(QStringLiteral("```"));
+        parts.push_back(QString());
+    } else if (name == QStringLiteral("ul") || name == QStringLiteral("ol")) {
         int i = 1;
-        for (auto* li : find_all(el, "li", false)) {
-            const std::string bullet = (name == "ol") ? std::to_string(i) + "." : "-";
-            parts.push_back(bullet + " " + get_text(li, " ", true));
+        for (auto* li : find_all(el, QStringLiteral("li"), false)) {
+            const QString bullet = (name == QStringLiteral("ol"))
+                                       ? QString::number(i) + QLatin1Char('.')
+                                       : QStringLiteral("-");
+            parts.push_back(bullet + QLatin1Char(' ') +
+                            get_text(li, QStringLiteral(" "), true));
             ++i;
         }
-        parts.push_back("");
-    } else if (name == "blockquote") {
-        std::string quote = get_text(el, " ", true);
-        if (!quote.empty()) {
-            parts.push_back("> " + quote);
-            parts.push_back("");
+        parts.push_back(QString());
+    } else if (name == QStringLiteral("blockquote")) {
+        const QString quote = get_text(el, QStringLiteral(" "), true);
+        if (!quote.isEmpty()) {
+            parts.push_back(QStringLiteral("> ") + quote);
+            parts.push_back(QString());
         }
-    } else if (name == "hr") {
-        parts.push_back("---");
-        parts.push_back("");
+    } else if (name == QStringLiteral("hr")) {
+        parts.push_back(QStringLiteral("---"));
+        parts.push_back(QString());
     } else {
         for (lxb_dom_node_t* child = el->first_child; child; child = child->next) {
             render_markdown(child, parts);
@@ -153,37 +177,35 @@ void render_markdown(lxb_dom_node_t* el, std::vector<std::string>& parts) {
     }
 }
 
-std::string html_to_markdown(lxb_dom_node_t* root) {
-    std::vector<std::string> parts;
+QString html_to_markdown(lxb_dom_node_t* root) {
+    QStringList parts;
     render_markdown(root, parts);
-    std::string text;
-    for (std::size_t i = 0; i < parts.size(); ++i) {
-        if (i) text += "\n";
-        text += parts[i];
-    }
-    text = std::regex_replace(text, std::regex("\\n{3,}"), "\n\n");
-    return trim(std::move(text));
+    QString text = parts.join(QLatin1Char('\n'));
+    text.replace(QRegularExpression(QStringLiteral("\\n{3,}")), QStringLiteral("\n\n"));
+    return text.trimmed();
 }
 
 }  // namespace
 
-std::string html_to_text(const std::string& html, const std::string& mode) {
-    if (mode != "text" && mode != "main" && mode != "markdown") {
-        throw std::invalid_argument("Unknown parse mode '" + mode +
-                                    "'. Supported: text, main, markdown");
+QString html_to_text(const QString& html, const QString& mode) {
+    if (mode != QStringLiteral("text") && mode != QStringLiteral("main") &&
+        mode != QStringLiteral("markdown")) {
+        throw InvalidArgument(
+            QStringLiteral("Unknown parse mode '%1'. Supported: text, main, markdown")
+                .arg(mode));
     }
     Document doc = Document::parse(html);
-    if (!doc.valid()) return {};
+    if (!doc.valid()) return QString();
 
     lxb_dom_node_t* root = doc.root();
-    if (mode == "text") {
+    if (mode == QStringLiteral("text")) {
         strip_chrome(root, kTextChromeTags);
-        return collapse_whitespace(get_text(root, "", false));
+        return collapse_whitespace(get_text(root, QString(), false));
     }
     strip_chrome(root, kMainChromeTags);
     lxb_dom_node_t* content = select_main_root(root);
-    if (mode == "main") {
-        return collapse_whitespace(get_text(content, "", false));
+    if (mode == QStringLiteral("main")) {
+        return collapse_whitespace(get_text(content, QString(), false));
     }
     return html_to_markdown(content);
 }

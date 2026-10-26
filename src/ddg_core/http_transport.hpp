@@ -8,20 +8,21 @@
 
 #include "http_response.hpp"
 
+#include <QMap>
+#include <QString>
+
 #include <functional>
-#include <map>
-#include <string>
 
 namespace ddg {
 
 /// One outbound request. `form` is used for application/x-www-form-urlencoded
 /// POSTs; `headers` applies to both methods.
 struct HttpRequest {
-    bool                               is_post = false;
-    std::string                        url;
-    std::map<std::string, std::string> headers;
-    std::map<std::string, std::string> form;
-    int                                timeout_ms = 30000;
+    bool                   is_post = false;
+    QString                url;
+    QMap<QString, QString> headers;
+    QMap<QString, QString> form;
+    int                    timeout_ms = 30000;
 };
 
 /// Synchronous transport supplied by the plugin. It may throw TimeoutError,

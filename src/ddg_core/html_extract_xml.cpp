@@ -11,31 +11,32 @@
 #include <QString>
 #include <QStringList>
 
-#include <string_view>
-
 namespace ddg::html {
 namespace {
 
-bool is_skipped(std::string_view tag) {
-    static constexpr std::string_view skipped[] = {
-        "script", "style", "noscript", "nav",      "header", "footer",
-        "aside",  "form",  "iframe",   "svg",      "canvas", "template",
-        "button", "input", "select",   "textarea", "img",
+bool is_skipped(const QString& tag) {
+    static const QStringList skipped = {
+        QStringLiteral("script"), QStringLiteral("style"),  QStringLiteral("noscript"),
+        QStringLiteral("nav"),    QStringLiteral("header"), QStringLiteral("footer"),
+        QStringLiteral("aside"),  QStringLiteral("form"),   QStringLiteral("iframe"),
+        QStringLiteral("svg"),    QStringLiteral("canvas"), QStringLiteral("template"),
+        QStringLiteral("button"), QStringLiteral("input"),  QStringLiteral("select"),
+        QStringLiteral("textarea"), QStringLiteral("img"),
     };
-    for (auto s : skipped)
-        if (tag == s) return true;
-    return false;
+    return skipped.contains(tag);
 }
 
-bool is_block(std::string_view tag) {
-    static constexpr std::string_view blocks[] = {
-        "p",    "div",  "section", "article", "main", "h1", "h2", "h3",
-        "h4",   "h5",   "h6",      "li",      "tr",   "br", "blockquote",
-        "pre",  "ul",   "ol",      "table",
+bool is_block(const QString& tag) {
+    static const QStringList blocks = {
+        QStringLiteral("p"),    QStringLiteral("div"),  QStringLiteral("section"),
+        QStringLiteral("article"), QStringLiteral("main"), QStringLiteral("h1"),
+        QStringLiteral("h2"),   QStringLiteral("h3"),   QStringLiteral("h4"),
+        QStringLiteral("h5"),   QStringLiteral("h6"),   QStringLiteral("li"),
+        QStringLiteral("tr"),   QStringLiteral("br"),   QStringLiteral("blockquote"),
+        QStringLiteral("pre"),  QStringLiteral("ul"),   QStringLiteral("ol"),
+        QStringLiteral("table"),
     };
-    for (auto b : blocks)
-        if (tag == b) return true;
-    return false;
+    return blocks.contains(tag);
 }
 
 void append_text(const xml::Node* node, QString& out) {
@@ -44,9 +45,9 @@ void append_text(const xml::Node* node, QString& out) {
         out += node->text;
         return;
     }
-    const std::string tag = node->tag.toStdString();
+    const QString& tag = node->tag;
     if (is_skipped(tag)) return;
-    if (tag == "br") {
+    if (tag == QStringLiteral("br")) {
         out += QLatin1Char('\n');
         return;
     }
@@ -55,8 +56,8 @@ void append_text(const xml::Node* node, QString& out) {
 }
 
 QString collapse_ws(QString in) {
-    QStringList lines = in.split(QLatin1Char('\n'));
-    QStringList kept;
+    QStringList      lines = in.split(QLatin1Char('\n'));
+    QStringList      kept;
     for (QString& line : lines) {
         line = line.simplified();
         if (!line.isEmpty()) kept.push_back(line);
@@ -71,7 +72,7 @@ const xml::Node* find_main(const xml::Node* node) {
         const QString id   = child->attrs.value(QStringLiteral("id"));
         const QString role = child->attrs.value(QStringLiteral("role"));
         if (id == QStringLiteral("main") || role == QStringLiteral("main") ||
-            xml::has_class(child.get(), "main")) {
+            xml::has_class(child.get(), QStringLiteral("main"))) {
             return child.get();
         }
         if (const xml::Node* found = find_main(child.get())) return found;
@@ -86,17 +87,17 @@ void markdown_walk(const xml::Node* node, QString& out, bool in_pre) {
         if (!in_pre && !node->text.isEmpty()) out += QLatin1Char(' ');
         return;
     }
-    const std::string tag = node->tag.toStdString();
+    const QString& tag = node->tag;
     if (is_skipped(tag)) return;
 
-    if (tag == "br") {
+    if (tag == QStringLiteral("br")) {
         out += QLatin1Char('\n');
         return;
     }
-    if (tag == "a") {
+    if (tag == QStringLiteral("a")) {
         QString label;
         for (const auto& child : node->children) markdown_walk(child.get(), label, in_pre);
-        label = label.simplified();
+        label              = label.simplified();
         const QString href = node->attrs.value(QStringLiteral("href"));
         if (!href.isEmpty() && href.startsWith(QStringLiteral("http")))
             out += QStringLiteral("[%1](%2)").arg(label, href);
@@ -104,20 +105,23 @@ void markdown_walk(const xml::Node* node, QString& out, bool in_pre) {
             out += label;
         return;
     }
-    if (tag.size() == 2 && tag[0] == 'h' && tag[1] >= '1' && tag[1] <= '6') {
+    if (tag.size() == 2 && tag.at(0) == QLatin1Char('h') &&
+        tag.at(1) >= QLatin1Char('1') && tag.at(1) <= QLatin1Char('6')) {
         QString label;
         for (const auto& child : node->children) markdown_walk(child.get(), label, in_pre);
-        out += QStringLiteral("\n%1 %2\n").arg(QString(tag[1]).repeated(tag[1] - '0'), label.simplified());
+        const QChar level = tag.at(1);
+        out += QStringLiteral("\n%1 %2\n")
+                   .arg(QString(level.digitValue(), QLatin1Char('#')), label.simplified());
         return;
     }
-    if (tag == "li") {
+    if (tag == QStringLiteral("li")) {
         out += QStringLiteral("\n- ");
         for (const auto& child : node->children) markdown_walk(child.get(), out, in_pre);
         return;
     }
     if (is_block(tag)) out += QLatin1Char('\n');
 
-    const bool pre = in_pre || tag == "pre";
+    const bool pre = in_pre || tag == QStringLiteral("pre");
     for (const auto& child : node->children) markdown_walk(child.get(), out, pre);
 
     if (is_block(tag)) out += QLatin1Char('\n');
@@ -125,24 +129,27 @@ void markdown_walk(const xml::Node* node, QString& out, bool in_pre) {
 
 }  // namespace
 
-std::string html_to_text(const std::string& html, const std::string& mode) {
+QString html_to_text(const QString& html, const QString& mode) {
     const auto doc = xml::parse(html);
-    if (!doc) return {};
+    if (!doc) return QString();
 
     const xml::Node* start = doc.get();
-    if (mode == "main") {
+    if (mode == QStringLiteral("main")) {
         if (const xml::Node* main = find_main(doc.get())) start = main;
-        else if (const xml::Node* article = xml::find_first(doc.get(), "article"))
+        else if (const xml::Node* article =
+                     xml::find_first(doc.get(), QStringLiteral("article")))
             start = article;
-        else if (const xml::Node* main = xml::find_first(doc.get(), "main")) start = main;
+        else if (const xml::Node* main =
+                     xml::find_first(doc.get(), QStringLiteral("main")))
+            start = main;
     }
 
-    if (mode == "markdown") {
+    if (mode == QStringLiteral("markdown")) {
         QString out;
         markdown_walk(start, out, false);
         QStringList lines = out.split(QLatin1Char('\n'));
         QStringList kept;
-        bool previous_blank = false;
+        bool        previous_blank = false;
         for (QString& line : lines) {
             line = line.simplified();
             if (line.isEmpty()) {
@@ -157,7 +164,7 @@ std::string html_to_text(const std::string& html, const std::string& mode) {
         }
         while (!kept.isEmpty() && kept.last().isEmpty()) kept.removeLast();
         static const QRegularExpression numbered_entry(QStringLiteral(R"(^\d+\.)"));
-        QStringList spaced;
+        QStringList                     spaced;
         for (const QString& line : kept) {
             const bool numbered = numbered_entry.match(line).hasMatch();
             if (numbered && !spaced.isEmpty()) {
@@ -166,12 +173,12 @@ std::string html_to_text(const std::string& html, const std::string& mode) {
             }
             spaced.push_back(line);
         }
-        return spaced.join(QLatin1Char('\n')).toStdString();
+        return spaced.join(QLatin1Char('\n'));
     }
 
     QString out;
     append_text(start, out);
-    return collapse_ws(out).toStdString();
+    return collapse_ws(out);
 }
 
 }  // namespace ddg::html

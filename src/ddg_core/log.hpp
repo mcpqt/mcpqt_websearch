@@ -5,18 +5,19 @@
 
 #pragma once
 
+#include <QString>
+
 #include <functional>
-#include <string>
 
 namespace ddg {
 
-using LogFn = std::function<void(int level, const std::string& message)>;
+using LogFn = std::function<void(int level, const QString& message)>;
 
-inline void log_info(const LogFn& log, const std::string& message) {
+inline void log_info(const LogFn& log, const QString& message) {
     if (log) log(2, message);
 }
 
-inline void log_error(const LogFn& log, const std::string& message) {
+inline void log_error(const LogFn& log, const QString& message) {
     if (log) log(4, message);
 }
 

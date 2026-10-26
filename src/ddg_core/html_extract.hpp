@@ -4,11 +4,11 @@
 
 #pragma once
 
-#include <string>
+#include <QString>
 
 namespace ddg::html {
 
 /// mode is "text" (default), "main" or "markdown".
-std::string html_to_text(const std::string& html, const std::string& mode = "text");
+QString html_to_text(const QString& html, const QString& mode = QStringLiteral("text"));
 
 }  // namespace ddg::html

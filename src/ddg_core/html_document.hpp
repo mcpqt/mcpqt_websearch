@@ -7,7 +7,7 @@
 
 #include <lexbor/html/html.h>
 
-#include <string>
+#include <QString>
 
 namespace ddg::html {
 
@@ -32,7 +32,7 @@ public:
     ~Document() { destroy(); }
 
     /// Parse an HTML string. On failure the returned Document is invalid().
-    static Document parse(const std::string& html);
+    static Document parse(const QString& html);
 
     bool                valid() const { return doc_ != nullptr; }
     explicit operator bool() const { return doc_ != nullptr; }

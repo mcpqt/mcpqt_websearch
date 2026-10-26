@@ -6,12 +6,13 @@
 
 #include "rate_limiter.hpp"
 
+#include <QString>
+
 #include <memory>
-#include <string>
 
 namespace ddg {
 
-std::unique_ptr<RateLimiterBase> make_rate_limiter(const std::string& strategy,
-                                                   int                requests_per_minute);
+std::unique_ptr<RateLimiterBase> make_rate_limiter(const QString& strategy,
+                                                   int            requests_per_minute);
 
 }  // namespace ddg

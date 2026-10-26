@@ -2,6 +2,8 @@
 
 #include "token_bucket_limiter.hpp"
 
+#include <QMutexLocker>
+
 #include <algorithm>
 #include <thread>
 
@@ -18,11 +20,11 @@ void TokenBucketLimiter::refill_locked() {
     const double elapsed =
         std::chrono::duration_cast<std::chrono::duration<double>>(now - updated_).count();
     updated_ = now;
-    tokens_ = std::min(burst_, tokens_ + elapsed * rate_);
+    tokens_  = std::min(burst_, tokens_ + elapsed * rate_);
 }
 
 bool TokenBucketLimiter::idle() {
-    std::lock_guard<std::mutex> lk(mu_);
+    QMutexLocker<QMutex> locker(&mu_);
     refill_locked();
     return tokens_ >= burst_;
 }
@@ -30,7 +32,7 @@ bool TokenBucketLimiter::idle() {
 void TokenBucketLimiter::acquire() {
     double wait_seconds = 0.0;
     {
-        std::lock_guard<std::mutex> lk(mu_);
+        QMutexLocker<QMutex> locker(&mu_);
         refill_locked();
         if (tokens_ < 1.0) {
             wait_seconds = rate_ > 0 ? (1.0 - tokens_) / rate_ : 1.0;

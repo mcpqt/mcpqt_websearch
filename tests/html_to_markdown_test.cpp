@@ -9,40 +9,37 @@
 #include <QString>
 
 #include <cstdio>
-#include <string>
-#include <string_view>
 
 namespace {
 
 int g_failures = 0;
 
-void check(bool condition, std::string_view message) {
+void check(bool condition, const QString& message) {
     if (!condition) {
-        std::fprintf(stderr, "FAIL: %.*s\n", static_cast<int>(message.size()),
-                     message.data());
+        std::fprintf(stderr, "FAIL: %s\n", message.toUtf8().constData());
         ++g_failures;
     }
 }
 
-void expect_contains(const std::string& text, std::string_view needle) {
-    if (text.find(needle) == std::string::npos) {
-        std::fprintf(stderr, "FAIL: markdown is missing '%.*s'\n",
-                     static_cast<int>(needle.size()), needle.data());
+void expect_contains(const QString& text, const QString& needle) {
+    if (!text.contains(needle)) {
+        std::fprintf(stderr, "FAIL: markdown is missing '%s'\n",
+                     needle.toUtf8().constData());
         ++g_failures;
     }
 }
 
-void expect_not_contains(const std::string& text, std::string_view needle) {
-    if (text.find(needle) != std::string::npos) {
-        std::fprintf(stderr, "FAIL: markdown still contains raw '%.*s'\n",
-                     static_cast<int>(needle.size()), needle.data());
+void expect_not_contains(const QString& text, const QString& needle) {
+    if (text.contains(needle)) {
+        std::fprintf(stderr, "FAIL: markdown still contains raw '%s'\n",
+                     needle.toUtf8().constData());
         ++g_failures;
     }
 }
 
-int count(const std::string& text, char needle) {
+int count(const QString& text, QChar needle) {
     int total = 0;
-    for (char ch : text)
+    for (QChar ch : text)
         if (ch == needle) ++total;
     return total;
 }
@@ -61,12 +58,12 @@ int main(int argc, char** argv) {
         return 2;
     }
 
-    const std::string html = QString::fromUtf8(file.readAll()).toStdString();
-    const std::string markdown = ddg::html::html_to_text(html, "markdown");
+    const QString html     = QString::fromUtf8(file.readAll());
+    const QString markdown = ddg::html::html_to_text(html, QStringLiteral("markdown"));
 
-    check(!markdown.empty(), "markdown output is empty");
-    check(markdown.find('\0') == std::string::npos, "markdown contains NUL bytes");
-    check(markdown.find('\n') != std::string::npos,
+    check(!markdown.isEmpty(), "markdown output is empty");
+    check(!markdown.contains(QLatin1Char('\0')), "markdown contains NUL bytes");
+    check(markdown.contains(QLatin1Char('\n')),
           "markdown output has no newline characters");
 
     expect_contains(markdown, "SQL Tryit Editor v1.6 - W3Schools");
@@ -103,9 +100,9 @@ int main(int argc, char** argv) {
     expect_not_contains(markdown, "![");
     expect_not_contains(markdown, "duckduckgo.com/t/sl_l");
 
-    check(count(markdown, '[') == count(markdown, ']'),
+    check(count(markdown, QLatin1Char('[')) == count(markdown, QLatin1Char(']')),
           "markdown square brackets are unbalanced");
-    check(count(markdown, '(') == count(markdown, ')'),
+    check(count(markdown, QLatin1Char('(')) == count(markdown, QLatin1Char(')')),
           "markdown parentheses are unbalanced");
 
     if (g_failures != 0) {
@@ -113,6 +110,7 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    std::printf("markdown conversion OK (%zu bytes)\n", markdown.size());
+    std::printf("markdown conversion OK (%lld bytes)\n",
+                static_cast<long long>(markdown.size()));
     return 0;
 }

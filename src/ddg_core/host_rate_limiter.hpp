@@ -6,24 +6,25 @@
 
 #include "rate_limiter.hpp"
 
+#include <QMap>
+#include <QMutex>
+#include <QString>
+
 #include <memory>
-#include <mutex>
-#include <string>
-#include <unordered_map>
 
 namespace ddg {
 
 class HostRateLimiter {
 public:
-    HostRateLimiter(std::string strategy, int requests_per_minute);
+    HostRateLimiter(QString strategy, int requests_per_minute);
 
-    void acquire(const std::string& url);
+    void acquire(const QString& url);
 
 private:
-    std::string                                                       strategy_;
-    int                                                               rpm_;
-    std::mutex                                                        mu_;
-    std::unordered_map<std::string, std::unique_ptr<RateLimiterBase>> limiters_;
+    QString                                         strategy_;
+    int                                             rpm_;
+    QMutex                                          mu_;
+    QMap<QString, std::shared_ptr<RateLimiterBase>> limiters_;
 };
 
 }  // namespace ddg

@@ -2,14 +2,18 @@
 
 #include "html_document.hpp"
 
+#include <QByteArray>
+
 namespace ddg::html {
 
-Document Document::parse(const std::string& html) {
+Document Document::parse(const QString& html) {
     lxb_html_document_t* doc = lxb_html_document_create();
     if (!doc) return Document{};
 
-    const auto* data = reinterpret_cast<const lxb_char_t*>(html.data());
-    if (lxb_html_document_parse(doc, data, html.size()) != LXB_STATUS_OK) {
+    const QByteArray utf8 = html.toUtf8();
+    const auto*      data = reinterpret_cast<const lxb_char_t*>(utf8.constData());
+    if (lxb_html_document_parse(doc, data, static_cast<size_t>(utf8.size())) !=
+        LXB_STATUS_OK) {
         lxb_html_document_destroy(doc);
         return Document{};
     }

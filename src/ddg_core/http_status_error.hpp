@@ -7,7 +7,8 @@
 #include "http_error.hpp"
 #include "http_response.hpp"
 
-#include <string>
+#include <QString>
+
 #include <utility>
 
 namespace ddg {
@@ -17,7 +18,9 @@ struct HttpStatusError : HttpError {
     HttpResponse response;
 
     HttpStatusError(int s, HttpResponse r)
-        : HttpError("HTTP " + std::to_string(s)), status(s), response(std::move(r)) {}
+        : HttpError(QStringLiteral("HTTP %1").arg(s)),
+          status(s),
+          response(std::move(r)) {}
 };
 
 }  // namespace ddg

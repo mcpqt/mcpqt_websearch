@@ -2,6 +2,8 @@
 
 #include "sliding_rate_limiter.hpp"
 
+#include <QMutexLocker>
+
 #include <thread>
 
 namespace ddg {
@@ -19,8 +21,8 @@ void SlidingRateLimiter::acquire() {
     while (true) {
         double wait_seconds = 0.0;
         {
-            std::lock_guard<std::mutex> lk(mu_);
-            const Time now = Clock::now();
+            QMutexLocker<QMutex> locker(&mu_);
+            const Time           now = Clock::now();
             purge_locked(now);
             if (static_cast<int>(requests_.size()) < rpm_) {
                 requests_.push_back(now);
@@ -36,14 +38,14 @@ void SlidingRateLimiter::acquire() {
         } else {
             // Oldest entry is at/just past the window but still listed (clock
             // resolution pile-up): drop it so we cannot spin on sleep(0).
-            std::lock_guard<std::mutex> lk(mu_);
+            QMutexLocker<QMutex> locker(&mu_);
             if (!requests_.empty()) requests_.pop_front();
         }
     }
 }
 
 bool SlidingRateLimiter::idle() {
-    std::lock_guard<std::mutex> lk(mu_);
+    QMutexLocker<QMutex> locker(&mu_);
     purge_locked(Clock::now());
     return requests_.empty();
 }

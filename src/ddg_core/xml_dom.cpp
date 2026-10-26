@@ -6,19 +6,14 @@
 #include <QStringList>
 #include <QXmlStreamReader>
 
-#include <cctype>
-
 namespace ddg::xml {
 namespace {
 
-QString lower(QString s) {
-    s = s.toLower();
-    return s;
-}
+QString lower(QString s) { return s.toLower(); }
 
 bool is_space(QChar ch) { return ch.isSpace(); }
 
-std::string collapse_ws(const QString& in) {
+QString collapse_ws(const QString& in) {
     QString out;
     out.reserve(in.size());
     bool pending_space = false;
@@ -33,7 +28,7 @@ std::string collapse_ws(const QString& in) {
         pending_space = false;
         started       = true;
     }
-    return out.toStdString();
+    return out;
 }
 
 void collect_text(const Node* node, QString& out) {
@@ -91,7 +86,7 @@ QString to_well_formed_xml(QString document) {
             continue;
         }
 
-        QString attrs = tag.mid(name_match.capturedLength());
+        QString attrs      = tag.mid(name_match.capturedLength());
         bool    self_close = attrs.trimmed().endsWith(QLatin1Char('/'));
         if (self_close) attrs = attrs.trimmed().chopped(1);
 
@@ -121,8 +116,8 @@ QString to_well_formed_xml(QString document) {
 
 }  // namespace
 
-std::unique_ptr<Node> parse(const std::string& html) {
-    const QString     document = to_well_formed_xml(QString::fromStdString(html));
+std::unique_ptr<Node> parse(const QString& html) {
+    const QString     document = to_well_formed_xml(html);
     QXmlStreamReader reader(document);
     auto             root = std::make_unique<Node>();
     root->tag             = QStringLiteral("#document");
@@ -133,24 +128,25 @@ std::unique_ptr<Node> parse(const std::string& html) {
         if (reader.hasError()) break;
 
         if (reader.isStartElement()) {
-            auto node    = std::make_unique<Node>();
-            node->tag    = lower(reader.name().toString());
+            auto node  = std::make_unique<Node>();
+            node->tag  = lower(reader.name().toString());
             for (const auto& a : reader.attributes())
                 node->attrs.insert(lower(a.name().toString()), a.value().toString());
-            Node* raw    = node.get();
+            Node* raw = node.get();
             raw->children.clear();
             raw->attrs.insert(QStringLiteral("__parent__"),
                               QString::number(reinterpret_cast<quintptr>(current)));
             current->children.push_back(std::move(node));
             current = raw;
         } else if (reader.isEndElement()) {
-            const quintptr parent = current->attrs.value(QStringLiteral("__parent__")).toULongLong();
+            const quintptr parent =
+                current->attrs.value(QStringLiteral("__parent__")).toULongLong();
             current->attrs.remove(QStringLiteral("__parent__"));
             current = reinterpret_cast<Node*>(parent);
             if (!current) break;
         } else if (reader.isCharacters() || reader.isCDATA()) {
-            auto text_node = std::make_unique<Node>();
-            text_node->text = reader.text().toString();
+            auto text_node   = std::make_unique<Node>();
+            text_node->text  = reader.text().toString();
             current->children.push_back(std::move(text_node));
         }
     }
@@ -159,56 +155,53 @@ std::unique_ptr<Node> parse(const std::string& html) {
     return root;
 }
 
-std::string attr(const Node* node, std::string_view name) {
-    if (!node) return {};
-    const auto it = node->attrs.constFind(QString::fromUtf8(name.data(), static_cast<int>(name.size())));
-    if (it == node->attrs.cend()) return {};
-    return it.value().toStdString();
+QString attr(const Node* node, const QString& name) {
+    if (!node) return QString();
+    const auto it = node->attrs.constFind(name);
+    if (it == node->attrs.cend()) return QString();
+    return it.value();
 }
 
-bool has_class(const Node* node, std::string_view name) {
+bool has_class(const Node* node, const QString& name) {
     if (!node) return false;
     const QString classes = node->attrs.value(QStringLiteral("class"));
-    const QString target  = QString::fromUtf8(name.data(), static_cast<int>(name.size()));
     for (const QString& token : classes.split(QChar::Space, Qt::SkipEmptyParts)) {
-        if (token == target) return true;
+        if (token == name) return true;
     }
     return false;
 }
 
-std::string text(const Node* node, bool collapse) {
-    if (!node) return {};
+QString text(const Node* node, bool collapse) {
+    if (!node) return QString();
     QString raw;
     collect_text(node, raw);
-    if (!collapse) return raw.toStdString();
+    if (!collapse) return raw;
     return collapse_ws(raw);
 }
 
-const Node* find_first(const Node* node, std::string_view tag) {
+const Node* find_first(const Node* node, const QString& tag) {
     if (!node) return nullptr;
-    const QString target = QString::fromUtf8(tag.data(), static_cast<int>(tag.size()));
     for (const auto& child : node->children) {
         if (child->is_text()) continue;
-        if (child->tag == target) return child.get();
+        if (child->tag == tag) return child.get();
         if (const Node* found = find_first(child.get(), tag)) return found;
     }
     return nullptr;
 }
 
-std::vector<const Node*> find_all(const Node* node, std::string_view tag) {
+std::vector<const Node*> find_all(const Node* node, const QString& tag) {
     std::vector<const Node*> out;
     if (!node) return out;
-    const QString target = QString::fromUtf8(tag.data(), static_cast<int>(tag.size()));
     for (const auto& child : node->children) {
         if (child->is_text()) continue;
-        if (child->tag == target) out.push_back(child.get());
+        if (child->tag == tag) out.push_back(child.get());
         const auto nested = find_all(child.get(), tag);
         out.insert(out.end(), nested.begin(), nested.end());
     }
     return out;
 }
 
-const Node* select_one_class(const Node* node, std::string_view cls) {
+const Node* select_one_class(const Node* node, const QString& cls) {
     if (!node) return nullptr;
     for (const auto& child : node->children) {
         if (child->is_text()) continue;
@@ -218,7 +211,7 @@ const Node* select_one_class(const Node* node, std::string_view cls) {
     return nullptr;
 }
 
-std::vector<const Node*> select_class(const Node* node, std::string_view cls) {
+std::vector<const Node*> select_class(const Node* node, const QString& cls) {
     std::vector<const Node*> out;
     if (!node) return out;
     for (const auto& child : node->children) {

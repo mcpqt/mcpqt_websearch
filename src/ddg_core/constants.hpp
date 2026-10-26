@@ -4,26 +4,30 @@
 
 #pragma once
 
-#include <string>
-#include <vector>
+#include <QString>
+#include <QStringList>
 
 namespace ddg {
 
-inline constexpr const char* kRefScheme              = "ref://";
-inline constexpr int         kDefaultRefUrlThreshold = 120;
+inline const QString kRefScheme               = QStringLiteral("ref://");
+inline constexpr int kDefaultRefUrlThreshold  = 120;
 
 // server.py: SUPPORTED_RATE_STRATEGIES
-inline const std::vector<std::string> kSupportedRateStrategies = {"sliding", "token_bucket"};
+inline const QStringList kSupportedRateStrategies = {QStringLiteral("sliding"),
+                                                     QStringLiteral("token_bucket")};
 
 // server.py: SUPPORTED_FETCH_BACKENDS. The Python originals are httpx/curl/auto;
 // here "httpx" is renamed "qt" (QNetworkAccessManager) and "auto" is dropped.
 // Both names are recognised at runtime; the actual transport is webio.
-inline const std::vector<std::string> kSupportedFetchBackends = {"qt", "curl"};
+inline const QStringList kSupportedFetchBackends = {QStringLiteral("qt"),
+                                                    QStringLiteral("curl")};
 
 // Advisory backend name; the actual transport is webio.
-inline constexpr const char* kCompiledFetchBackend = "qt";
+inline const QString kCompiledFetchBackend = QStringLiteral("qt");
 
 // server.py: SUPPORTED_PARSE_MODES
-inline const std::vector<std::string> kSupportedParseModes = {"text", "main", "markdown"};
+inline const QStringList kSupportedParseModes = {QStringLiteral("text"),
+                                                 QStringLiteral("main"),
+                                                 QStringLiteral("markdown")};
 
 }  // namespace ddg

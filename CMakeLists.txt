@@ -61,6 +61,7 @@ set(DDG_CORE_HEADERS
     src/ddg_core/blocked_url_error.hpp
     src/ddg_core/connect_error.hpp
     src/ddg_core/constants.hpp
+    src/ddg_core/error.hpp
     src/ddg_core/fetcher.hpp
     src/ddg_core/host_rate_limiter.hpp
     src/ddg_core/html_extract.hpp
@@ -152,6 +153,7 @@ if(BUILD_TESTING)
     )
     target_link_libraries(ddg_html_to_markdown_test PRIVATE
         Qt6::Core
+        Qt6::Network
     )
     if(DDG_USE_LEXBOR)
         target_compile_definitions(ddg_html_to_markdown_test PRIVATE DDG_USE_LEXBOR=1)
