@@ -10,7 +10,6 @@
 #include "http_client.hpp"
 #include "link_registry.hpp"
 #include "rate_limiter.hpp"
-#include "tls_verify.hpp"
 #include "ttl_cache.hpp"
 
 #include <memory>
@@ -24,7 +23,6 @@ public:
     struct Config {
         std::string backend                 = kCompiledFetchBackend;
         bool        allow_private_urls      = false;
-        TlsVerify   ssl_verify{};
         Transport   transport;
         int         requests_per_minute     = 20;
         int         host_requests_per_minute = 0;  // 0 disables the per-host limiter

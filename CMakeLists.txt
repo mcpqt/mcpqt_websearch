@@ -79,7 +79,6 @@ set(DDG_CORE_HEADERS
     src/ddg_core/search_result.hpp
     src/ddg_core/sliding_rate_limiter.hpp
     src/ddg_core/timeout_error.hpp
-    src/ddg_core/tls_verify.hpp
     src/ddg_core/token_bucket_limiter.hpp
     src/ddg_core/ttl_cache.hpp
     src/ddg_core/utils.hpp
@@ -107,10 +106,6 @@ set_target_properties(mcpqt_websearch PROPERTIES PREFIX "")
 target_include_directories(mcpqt_websearch PRIVATE
     src
     src/ddg_core
-)
-
-target_compile_definitions(mcpqt_websearch PRIVATE
-    DDG_HTTP_BACKEND="qt"
 )
 
 if(DDG_USE_LEXBOR)
@@ -159,7 +154,6 @@ if(BUILD_TESTING)
     )
     target_link_libraries(ddg_html_to_markdown_test PRIVATE
         Qt6::Core
-        Qt6::Network
     )
     if(DDG_USE_LEXBOR)
         target_compile_definitions(ddg_html_to_markdown_test PRIVATE DDG_USE_LEXBOR=1)

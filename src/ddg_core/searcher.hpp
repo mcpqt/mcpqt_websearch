@@ -11,7 +11,6 @@
 #include "rate_limiter.hpp"
 #include "safe_search_mode.hpp"
 #include "search_result.hpp"
-#include "tls_verify.hpp"
 
 #include <memory>
 #include <string>
@@ -50,7 +49,6 @@ public:
         SafeSearchMode safe_search          = SafeSearchMode::Moderate;
         std::string    default_region;
         std::string    backend              = kCompiledFetchBackend;
-        TlsVerify      ssl_verify{};
         Transport      transport;
         int            requests_per_minute  = 30;
         std::string    rate_limit_strategy  = "sliding";

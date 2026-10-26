@@ -7,12 +7,6 @@
 #include <string>
 #include <vector>
 
-// The active network backend name. Requests are performed by the webio plugin;
-// "qt" is kept for cache keys and the advisory backend parameter.
-#ifndef DDG_HTTP_BACKEND
-#define DDG_HTTP_BACKEND "qt"
-#endif
-
 namespace ddg {
 
 inline constexpr const char* kRefScheme              = "ref://";
@@ -26,8 +20,8 @@ inline const std::vector<std::string> kSupportedRateStrategies = {"sliding", "to
 // Both names are recognised at runtime; the actual transport is webio.
 inline const std::vector<std::string> kSupportedFetchBackends = {"qt", "curl"};
 
-// The backend this binary was built with.
-inline constexpr const char* kCompiledFetchBackend = DDG_HTTP_BACKEND;
+// Advisory backend name; the actual transport is webio.
+inline constexpr const char* kCompiledFetchBackend = "qt";
 
 // server.py: SUPPORTED_PARSE_MODES
 inline const std::vector<std::string> kSupportedParseModes = {"text", "main", "markdown"};

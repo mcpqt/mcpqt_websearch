@@ -9,7 +9,6 @@
 #pragma once
 
 #include "http_response.hpp"
-#include "tls_verify.hpp"
 
 #include <functional>
 #include <map>
@@ -33,7 +32,7 @@ using Transport = std::function<HttpResponse(const HttpRequest&)>;
 
 class HttpClient {
 public:
-    explicit HttpClient(TlsVerify, Transport transport = {});
+    explicit HttpClient(Transport transport = {});
 
     /// GET without following redirects.
     HttpResponse get(const std::string&                       url,
@@ -45,10 +44,6 @@ public:
                            const std::map<std::string, std::string>& form,
                            const std::map<std::string, std::string>& headers    = {},
                            int                                       timeout_ms = 30000);
-
-    /// The active backend name. Kept as "qt" for compatibility with the
-    /// compile-time backend and cache keys; the actual transport is webio.
-    static const char* backend_name();
 
 private:
     HttpResponse perform(HttpRequest request);

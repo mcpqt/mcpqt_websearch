@@ -11,7 +11,7 @@
 
 namespace ddg {
 
-HttpClient::HttpClient(TlsVerify, Transport transport)
+HttpClient::HttpClient(Transport transport)
     : transport_(std::move(transport)) {}
 
 HttpResponse HttpClient::get(const std::string&                       url,
@@ -36,8 +36,6 @@ HttpResponse HttpClient::post_form(const std::string&                       url,
     request.timeout_ms = timeout_ms;
     return perform(std::move(request));
 }
-
-const char* HttpClient::backend_name() { return "qt"; }
 
 HttpResponse HttpClient::perform(HttpRequest request) {
     if (!transport_) {
