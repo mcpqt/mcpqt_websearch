@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// Lexbor-backed page parser. Compiled only when DDG_USE_LEXBOR is enabled.
+// Lexbor-backed page parser. Not used by the build: the search tool always uses
+// page_parser_xml.cpp. Retained for reference.
 
 #include "searcher.hpp"
 

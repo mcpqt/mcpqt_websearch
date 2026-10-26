@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// Full HTML -> text extraction (server.py _html_to_text).
+// Full HTML -> text extraction (server.py _html_to_text). Always Lexbor-backed;
+// the search tool uses page_parser_xml.cpp instead.
 
 #pragma once
 

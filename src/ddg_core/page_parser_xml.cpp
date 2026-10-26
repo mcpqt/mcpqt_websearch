@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// QXmlStreamReader-backed page parser. Compiled only when DDG_USE_LEXBOR is
-// disabled.
+// QXmlStreamReader-backed page parser. The search tool always uses this parser.
 
 #include "searcher.hpp"
 

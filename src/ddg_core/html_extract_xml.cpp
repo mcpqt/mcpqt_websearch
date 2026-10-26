@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// QXmlStreamReader-backed HTML -> text extraction. Compiled only when
-// DDG_USE_LEXBOR is disabled.
+// QXmlStreamReader-backed HTML -> text extraction. Not used by the build:
+// fetched pages are always extracted with the Lexbor parser. Retained for
+// reference.
 
 #include "html_extract.hpp"
 

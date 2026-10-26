@@ -6,6 +6,7 @@ search, page fetching, and link expansion as MCP tools. No API key is required.
 ## Requirements
 
 - C++20 and Qt 6.4+
+- The vendored `lexbor` submodule (`git submodule update --init`)
 - The [`mcpqt_webio`](../mcpqt_webio) plugin, loaded before websearch
 - An installed `mcpqt_host` to load the built plugins
 
@@ -19,12 +20,9 @@ cmake --build build
 This produces `build/mcpqt_websearch.so` (`.dylib` / `.dll` on other
 platforms).
 
-To use the vendored Lexbor HTML parser instead of the Qt XML fallback:
-
-```sh
-cmake -S . -B build -DDDG_USE_LEXBOR=ON
-cmake --build build
-```
+Fetched page content is always extracted with the vendored Lexbor parser.
+Search result pages are always parsed with the QXmlStreamReader-backed parser;
+there is no build-time parser switch.
 
 ## Run
 
