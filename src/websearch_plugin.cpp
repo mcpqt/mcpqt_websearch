@@ -12,8 +12,8 @@
 #include "link_registry.hpp"
 #include "safe_search_mode.hpp"
 #include "searcher.hpp"
-#include "tls_verify.hpp"
 #include "utils.hpp"
+#include "webio_transport.hpp"
 
 #include <QObject>
 #include <QString>
@@ -91,6 +91,8 @@ namespace
     void initialize(const mcp::HostInterface& host) override
     {
       m_host = host;
+      const ddg::Transport transport
+          = ddg::make_webio_transport(m_host.callFunc);
       m_context = ddg::Context(
           [this](int level, const std::string& message)
           {
@@ -125,17 +127,6 @@ namespace
         fetch_backend = ddg::to_lower(ddg::trim(*v));
       }
 
-      ddg::TlsVerify tls;
-      if(const auto v = env_str("DDG_SSL_VERIFY"))
-      {
-        const std::string s = ddg::to_lower(ddg::trim(*v));
-        tls.enabled = !(s == "0" || s == "false" || s == "no" || s == "off");
-      }
-      if(const auto v = env_str("DDG_CA_CERTS"))
-      {
-        tls.ca_bundle = ddg::trim(*v);
-      }
-
       const int search_rpm = env_int("DDG_SEARCH_RPM", 1).value_or(30);
       const int fetch_rpm = env_int("DDG_FETCH_RPM", 1).value_or(20);
       const int fetch_host_rpm = env_int("DDG_FETCH_HOST_RPM", 0).value_or(0);
@@ -168,7 +159,7 @@ namespace
       search_cfg.safe_search = mode;
       search_cfg.default_region = region;
       search_cfg.backend = search_backend;
-      search_cfg.ssl_verify = tls;
+      search_cfg.transport = transport;
       search_cfg.requests_per_minute = search_rpm;
       search_cfg.rate_limit_strategy = rate_strategy;
       search_cfg.ref_url_threshold = ref_threshold;
@@ -178,7 +169,7 @@ namespace
       ddg::WebContentFetcher::Config fetch_cfg;
       fetch_cfg.backend = fetch_backend;
       fetch_cfg.allow_private_urls = env_flag("DDG_ALLOW_PRIVATE_URLS");
-      fetch_cfg.ssl_verify = tls;
+      fetch_cfg.transport = transport;
       fetch_cfg.requests_per_minute = fetch_rpm;
       fetch_cfg.host_requests_per_minute = fetch_host_rpm;
       fetch_cfg.rate_limit_strategy = rate_strategy;

@@ -93,7 +93,7 @@ DuckDuckGoSearcher::DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegist
     : config_(std::move(config)),
       links_(std::move(links)),
       rate_limiter_(make_rate_limiter(config_.rate_limit_strategy, config_.requests_per_minute)),
-      client_(std::make_unique<HttpClient>(config_.ssl_verify)) {}
+      client_(std::make_unique<HttpClient>(config_.ssl_verify, config_.transport)) {}
 
 // Out-of-line so unique_ptr<HttpClient> sees a complete type (http_client.hpp).
 DuckDuckGoSearcher::~DuckDuckGoSearcher() = default;
@@ -224,14 +224,9 @@ std::string DuckDuckGoSearcher::format_results_for_llm(
             "No results were found for your search query. This could be due to "
             "DuckDuckGo's bot detection or the query returned no matches. Please try "
             "rephrasing your search or try again in a few minutes.";
-        // The Python server suggests installing the optional curl_cffi backend when
-        // it is absent; here the equivalent is building against the curl backend.
-        if (std::string(kCompiledFetchBackend) != "curl") {
-            message +=
-                " If this persists, DuckDuckGo may be blocking this server's TLS "
-                "fingerprint; building with -DDDG_HTTP_BACKEND=curl enables using the "
-                "system curl backend, which typically resolves it.";
-        }
+        message +=
+            " If this persists, DuckDuckGo may be blocking this server; try again in "
+            "a few minutes.";
         return message;
     }
 

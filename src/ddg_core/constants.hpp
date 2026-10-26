@@ -7,9 +7,8 @@
 #include <string>
 #include <vector>
 
-// The active network backend is chosen at configure time by CMake
-// (DDG_HTTP_BACKEND = qt | curl). It is baked in so only one implementation
-// (http_client_qt.cpp or http_client_curl.cpp) is compiled.
+// The active network backend name. Requests are performed by the webio plugin;
+// "qt" is kept for cache keys and the advisory backend parameter.
 #ifndef DDG_HTTP_BACKEND
 #define DDG_HTTP_BACKEND "qt"
 #endif
@@ -24,8 +23,7 @@ inline const std::vector<std::string> kSupportedRateStrategies = {"sliding", "to
 
 // server.py: SUPPORTED_FETCH_BACKENDS. The Python originals are httpx/curl/auto;
 // here "httpx" is renamed "qt" (QNetworkAccessManager) and "auto" is dropped.
-// Both names are recognised at runtime, but the actual implementation is the
-// one selected by DDG_HTTP_BACKEND at configure time.
+// Both names are recognised at runtime; the actual transport is webio.
 inline const std::vector<std::string> kSupportedFetchBackends = {"qt", "curl"};
 
 // The backend this binary was built with.

@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// Outbound HTTP client. The transport implementation is selected at configure
-// time (see DDG_HTTP_BACKEND): either QNetworkAccessManager ("qt") or the
-// system `curl` binary ("curl"). Only the matching .cpp is compiled, so this
-// header stays free of Qt/process specifics.
+// Outbound HTTP client. The transport is injected by the plugin (webio) so the
+// search/fetch logic stays independent of the concrete network stack.
 //
 // Exceptions mirror the httpx types server.py catches (HttpStatusError,
 // ConnectError, TimeoutError).
@@ -13,14 +11,29 @@
 #include "http_response.hpp"
 #include "tls_verify.hpp"
 
+#include <functional>
 #include <map>
 #include <string>
 
 namespace ddg {
 
+/// One outbound request. `form` is used for application/x-www-form-urlencoded
+/// POSTs; `headers` applies to both methods.
+struct HttpRequest {
+    bool                               is_post = false;
+    std::string                        url;
+    std::map<std::string, std::string> headers;
+    std::map<std::string, std::string> form;
+    int                                timeout_ms = 30000;
+};
+
+/// Synchronous transport supplied by the plugin. It may throw TimeoutError,
+/// ConnectError, or HttpError.
+using Transport = std::function<HttpResponse(const HttpRequest&)>;
+
 class HttpClient {
 public:
-    explicit HttpClient(TlsVerify verify);
+    explicit HttpClient(TlsVerify, Transport transport = {});
 
     /// GET without following redirects.
     HttpResponse get(const std::string&                       url,
@@ -33,17 +46,14 @@ public:
                            const std::map<std::string, std::string>& headers    = {},
                            int                                       timeout_ms = 30000);
 
-    /// The compiled-in backend name: "qt" or "curl".
+    /// The active backend name. Kept as "qt" for compatibility with the
+    /// compile-time backend and cache keys; the actual transport is webio.
     static const char* backend_name();
 
 private:
-    HttpResponse perform(const std::string&                       method,
-                         const std::string&                       url,
-                         const std::map<std::string, std::string>& headers,
-                         const std::string&                       body,
-                         int                                      timeout_ms);
+    HttpResponse perform(HttpRequest request);
 
-    TlsVerify verify_;
+    Transport transport_;
 };
 
 }  // namespace ddg

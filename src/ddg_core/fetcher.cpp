@@ -43,7 +43,7 @@ WebContentFetcher::WebContentFetcher(Config config, std::shared_ptr<LinkRegistry
                                                             config_.host_requests_per_minute)
                         : nullptr),
       cache_(config_.cache_ttl, config_.cache_max_entries),
-      client_(std::make_unique<HttpClient>(config_.ssl_verify)) {}
+      client_(std::make_unique<HttpClient>(config_.ssl_verify, config_.transport)) {}
 
 // Out-of-line so unique_ptr<HttpClient> sees a complete type (http_client.hpp).
 WebContentFetcher::~WebContentFetcher() = default;

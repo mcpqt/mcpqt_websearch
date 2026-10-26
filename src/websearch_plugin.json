@@ -1,4 +1,5 @@
 {
+    "dependencies": ["webio"],
     "Tools": {
         "QString WebsearchPlugin::search(QString,int,QString,QString)": {
             "name": "websearch/search",

@@ -32,7 +32,7 @@ set(DDG_CORE_SOURCES
     src/ddg_core/fetcher.cpp
     src/ddg_core/host_rate_limiter.cpp
     src/ddg_core/http_client.cpp
-    src/ddg_core/http_client_qt.cpp
+    src/ddg_core/webio_transport.cpp
     src/ddg_core/link_registry.cpp
     src/ddg_core/rate_limiter_factory.cpp
     src/ddg_core/safe_search_mode.cpp
@@ -83,6 +83,7 @@ set(DDG_CORE_HEADERS
     src/ddg_core/token_bucket_limiter.hpp
     src/ddg_core/ttl_cache.hpp
     src/ddg_core/utils.hpp
+    src/ddg_core/webio_transport.hpp
     src/ddg_core/xml_dom.hpp
 )
 
@@ -169,4 +170,17 @@ if(BUILD_TESTING)
         COMMAND ddg_html_to_markdown_test
             ${CMAKE_CURRENT_SOURCE_DIR}/tests/data/ddg_lite_results.html
     )
+
+    add_executable(webio_transport_test
+        tests/webio_transport_test.cpp
+        src/ddg_core/webio_transport.cpp
+    )
+    target_include_directories(webio_transport_test PRIVATE
+        src
+        src/ddg_core
+    )
+    target_link_libraries(webio_transport_test PRIVATE
+        Qt6::Core
+    )
+    add_test(NAME webio_transport COMMAND webio_transport_test)
 endif()

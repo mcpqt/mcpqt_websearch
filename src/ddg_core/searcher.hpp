@@ -6,6 +6,7 @@
 
 #include "constants.hpp"
 #include "context.hpp"
+#include "http_client.hpp"
 #include "link_registry.hpp"
 #include "rate_limiter.hpp"
 #include "safe_search_mode.hpp"
@@ -17,8 +18,6 @@
 #include <vector>
 
 namespace ddg {
-
-class HttpClient;
 
 /// Parse a DuckDuckGo HTML results page into SearchResults (no network access).
 /// Exposed as a free function so it can be unit-tested with fixtures.
@@ -52,6 +51,7 @@ public:
         std::string    default_region;
         std::string    backend              = kCompiledFetchBackend;
         TlsVerify      ssl_verify{};
+        Transport      transport;
         int            requests_per_minute  = 30;
         std::string    rate_limit_strategy  = "sliding";
         int            ref_url_threshold    = kDefaultRefUrlThreshold;
