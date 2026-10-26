@@ -6,6 +6,7 @@
 #include "html_document.hpp"
 #include "html_query.hpp"
 #include "html_text.hpp"
+#include "readability.hpp"
 #include "utils.hpp"
 
 #include <QRegularExpression>
@@ -187,13 +188,22 @@ QString html_to_markdown(lxb_dom_node_t* root) {
 
 }  // namespace
 
-QString html_to_text(const QString& html, const QString& mode) {
+QString html_to_text(const QString& html, const QString& mode, const QString& base_url) {
     if (mode != QStringLiteral("text") && mode != QStringLiteral("main") &&
         mode != QStringLiteral("markdown")) {
         throw InvalidArgument(
             QStringLiteral("Unknown parse mode '%1'. Supported: text, main, markdown")
                 .arg(mode));
     }
+
+    Article article = extract_article(html, base_url);
+    if (article.ok) {
+        if (mode == QStringLiteral("markdown")) return html_to_markdown(article.content);
+        return collapse_whitespace(article.text_content);
+    }
+
+    // Readability needs a body with readable content. For tiny/structural
+    // documents fall back to the original main-content selector heuristic.
     Document doc = Document::parse(html);
     if (!doc.valid()) return QString();
 

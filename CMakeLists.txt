@@ -41,6 +41,7 @@ set(DDG_CORE_SOURCES
     src/ddg_core/html_query.cpp
     src/ddg_core/html_text.cpp
     src/ddg_core/page_parser_xml.cpp
+    src/ddg_core/readability.cpp
     src/ddg_core/utils.cpp
     src/ddg_core/xml_dom.cpp
 )
@@ -64,6 +65,7 @@ set(DDG_CORE_HEADERS
     src/ddg_core/log.hpp
     src/ddg_core/rate_limiter_factory.hpp
     src/ddg_core/rate_limiter.hpp
+    src/ddg_core/readability.hpp
     src/ddg_core/safe_search_mode.hpp
     src/ddg_core/searcher.hpp
     src/ddg_core/search_result.hpp
@@ -110,6 +112,7 @@ if(BUILD_TESTING)
         src/ddg_core/html_document.cpp
         src/ddg_core/html_query.cpp
         src/ddg_core/html_text.cpp
+        src/ddg_core/readability.cpp
         src/ddg_core/utils.cpp
     )
     target_include_directories(ddg_html_to_markdown_test PRIVATE

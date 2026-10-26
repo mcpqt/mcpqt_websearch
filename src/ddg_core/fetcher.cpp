@@ -115,7 +115,7 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
                               .arg(effective_mode));
 
             const QString html = fetch(url);
-            text               = html::html_to_text(html, effective_mode);
+            text               = html::html_to_text(html, effective_mode, url);
             if (!cache_key.isNull()) m_cache.set(cache_key, text);
         } else {
             log_info(log, QStringLiteral("Cache hit for %1 (parse_mode=%2); "

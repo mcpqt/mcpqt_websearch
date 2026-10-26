@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
-// Full HTML -> text extraction (server.py _html_to_text). Always Lexbor-backed;
-// the search tool uses page_parser_xml.cpp instead.
+// Full HTML -> text extraction. Fetched pages are reduced to their main article
+// with the Readability port in readability.cpp; the search tool uses
+// page_parser_xml.cpp instead.
 
 #pragma once
 
@@ -9,7 +10,9 @@
 
 namespace ddg::html {
 
-/// mode is "text" (default), "main" or "markdown".
-QString html_to_text(const QString& html, const QString& mode = QStringLiteral("text"));
+/// mode is "text" (default), "main" or "markdown". `base_url` is the page URL
+/// used to resolve relative links while extracting the article.
+QString html_to_text(const QString& html, const QString& mode = QStringLiteral("text"),
+                     const QString& base_url = QString());
 
 }  // namespace ddg::html
