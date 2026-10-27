@@ -35,25 +35,18 @@ QString url_join(const QString& base, const QString& location) {
     return QUrl(base).resolved(QUrl(location)).toString();
 }
 
-QString normalize_cache_url(const QString& url) {
-    const QUrl    u(url, QUrl::TolerantMode);
-    const QString scheme =
-        u.scheme().isEmpty() ? "http" : u.scheme().toLower();
-    const QString host = u.host().toLower();
-    const int     port = u.port(-1);
-
-    QString netloc = host;
-    if (port > 0 && !((scheme == "http" && port == 80) ||
-                      (scheme == "https" && port == 443))) {
-        netloc = host + QLatin1Char(':') + QString::number(port);
-    }
-
-    const QString path = u.path().isEmpty() ? "/" : u.path();
-    const QString query = u.query(QUrl::FullyEncoded);
-
-    QString out = scheme + "://" + netloc + path;
-    if (!query.isEmpty()) out += QLatin1Char('?') + query;
-    return out;
+QString normalize_cache_url(const QString& str)
+{
+  QUrl::FormattingOptions flags = QUrl::RemoveFragment | QUrl::NormalizePathSegments;
+  QUrl url(str);
+  if (url.scheme().isEmpty())
+    url = QUrl::fromUserInput(str), url.setScheme("https");
+  if(url.query().isEmpty())
+    flags |= QUrl::RemoveQuery;
+  if((url.scheme() == "http" && url.port(80) == 80) ||
+     (url.scheme() == "https" && url.port(443) == 443))
+    flags |= QUrl::RemovePort;
+  return url.toString(flags);
 }
 
 // ---------------------------------------------------------------------------
