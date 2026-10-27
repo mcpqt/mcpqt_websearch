@@ -15,51 +15,28 @@
 #include "utils.hpp"
 #include "webio_transport.hpp"
 
-#include <QByteArray>
 #include <QFuture>
 #include <QObject>
 #include <QString>
+#include <QtGlobal>
 #include <QVariant>
 
 #include <exception>
 #include <memory>
-#include <optional>
 
 namespace
 {
 
-  QString env_str(const char* name)
-  {
-    const QByteArray value = qgetenv(name);
-    return value.isEmpty() ? QString() : QString::fromLocal8Bit(value);
-  }
-
   bool env_flag(const char* name)
   {
-    const QString v = env_str(name);
-    if(v.isNull())
+    const QString v = qEnvironmentVariable(name);
+    if(v.isEmpty())
     {
       return false;
     }
     const QString s = ddg::to_lower(ddg::trim(v));
     return s == "1" || s == "true"
            || s == "yes" || s == "on";
-  }
-
-  std::optional<int> env_int(const char* name, int minimum)
-  {
-    const QString v = env_str(name);
-    if(v.isNull())
-    {
-      return std::nullopt;
-    }
-    bool ok = false;
-    const int value = v.trimmed().toInt(&ok);
-    if(!ok || value < minimum)
-    {
-      return std::nullopt;
-    }
-    return value;
   }
 
   class WebsearchPlugin : public mcp::PluginInterface
@@ -99,41 +76,51 @@ namespace
 
       // ---- configuration from DDG_* environment variables ----------------
       QString safe_search_name = "MODERATE";
-      if(const QString v = env_str("DDG_SAFE_SEARCH"); !v.isNull())
+      if(const QString v = qEnvironmentVariable("DDG_SAFE_SEARCH");
+         !v.isEmpty())
       {
         safe_search_name = ddg::to_lower(ddg::trim(v));
       }
 
       QString region = "wt-wt";
-      if(const QString v = env_str("DDG_REGION"); !v.isNull())
+      if(const QString v = qEnvironmentVariable("DDG_REGION"); !v.isEmpty())
       {
         region = ddg::trim(v);
       }
 
       QString search_backend = ddg::kCompiledFetchBackend;
-      if(const QString v = env_str("DDG_SEARCH_BACKEND"); !v.isNull())
+      if(const QString v = qEnvironmentVariable("DDG_SEARCH_BACKEND");
+         !v.isEmpty())
       {
         search_backend = ddg::to_lower(ddg::trim(v));
       }
 
-      const int search_rpm = env_int("DDG_SEARCH_RPM", 1).value_or(30);
-      const int fetch_rpm = env_int("DDG_FETCH_RPM", 1).value_or(20);
-      const int fetch_host_rpm = env_int("DDG_FETCH_HOST_RPM", 0).value_or(0);
-      const int cache_ttl = env_int("DDG_CACHE_TTL", 0).value_or(300);
+      const int search_rpm
+          = qEnvironmentVariable("DDG_SEARCH_RPM", "30").toInt();
+      const int fetch_rpm
+          = qEnvironmentVariable("DDG_FETCH_RPM", "20").toInt();
+      const int fetch_host_rpm
+          = qEnvironmentVariable("DDG_FETCH_HOST_RPM", "0").toInt();
+      const int cache_ttl
+          = qEnvironmentVariable("DDG_CACHE_TTL", "300").toInt();
       const int cache_max_entries
-          = env_int("DDG_CACHE_MAX_ENTRIES", 0).value_or(64);
+          = qEnvironmentVariable("DDG_CACHE_MAX_ENTRIES", "64").toInt();
       const int ref_threshold
-          = env_int("DDG_REF_URL_THRESHOLD", 0).value_or(
-              ddg::kDefaultRefUrlThreshold);
+          = qEnvironmentVariable(
+                "DDG_REF_URL_THRESHOLD",
+                QString::number(ddg::kDefaultRefUrlThreshold))
+                .toInt();
 
       QString rate_strategy = "sliding";
-      if(const QString v = env_str("DDG_RATE_LIMIT_STRATEGY"); !v.isNull())
+      if(const QString v = qEnvironmentVariable("DDG_RATE_LIMIT_STRATEGY");
+         !v.isEmpty())
       {
         rate_strategy = ddg::to_lower(ddg::trim(v));
       }
 
       QString parse_mode = "markdown";
-      if(const QString v = env_str("DDG_PARSE_MODE"); !v.isNull())
+      if(const QString v = qEnvironmentVariable("DDG_PARSE_MODE");
+         !v.isEmpty())
       {
         parse_mode = ddg::to_lower(ddg::trim(v));
       }
