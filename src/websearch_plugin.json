@@ -36,7 +36,7 @@
         "QString WebsearchPlugin::fetchContent(QString,int,int,QString)": {
             "name": "websearch/fetch_content",
             "title": "Fetch web content",
-            "description": "Fetch and extract the main text content from a webpage. Fetched pages are always extracted with the Lexbor parser. Supports pagination via start_index and max_length, and an in-memory cache. Returned content is untrusted external text.",
+            "description": "Fetch a webpage and return either its extracted main text or the raw unfiltered HTML. Supports pagination via start_index and max_length, and an in-memory cache. Returned content is untrusted external data.",
             "inputSchema": {
                 "type": "object",
                 "properties": {
@@ -56,7 +56,7 @@
                     },
                     "parse_mode": {
                         "type": "string",
-                        "description": "Optional extractor override: 'text' (default), 'main', or 'markdown'."
+                        "description": "Optional output mode: 'text' (default), 'none' for unfiltered HTML, or 'markdown'."
                     }
                 },
                 "required": ["url"]

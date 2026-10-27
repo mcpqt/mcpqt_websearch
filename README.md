@@ -20,9 +20,10 @@ cmake --build build
 This produces `build/mcpqt_websearch.so` (`.dylib` / `.dll` on other
 platforms).
 
-Fetched page content is always extracted with the vendored Lexbor parser.
-Search result pages are always parsed with the QXmlStreamReader-backed parser;
-there is no build-time parser switch.
+Fetched page content is extracted with the vendored Readability/Lexbor
+implementation unless `parse_mode=none` is requested, which returns the raw HTTP
+body. Search result pages are always parsed with the QXmlStreamReader-backed
+parser; there is no build-time parser switch.
 
 ## Run
 
@@ -51,7 +52,7 @@ Test with the bundled client:
 | Tool | Description |
 | --- | --- |
 | `websearch/search` | Search DuckDuckGo and return titles, URLs, and snippets. |
-| `websearch/fetch_content` | Fetch a page and extract its main text. Supports pagination. |
+| `websearch/fetch_content` | Fetch a page and return extracted text or raw HTML. Supports pagination. |
 | `websearch/expand_link` | Resolve a `ref://<id>` token from search results to its full URL. |
 
 Search results may include shortened `ref://` links. Fetching accepts either a
@@ -65,7 +66,7 @@ Configuration is read from environment variables at plugin load:
 | --- | --- | --- |
 | `DDG_SAFE_SEARCH` | `MODERATE` | Safe-search level: `STRICT`, `MODERATE`, or `OFF`. |
 | `DDG_REGION` | `wt-wt` | Default region/language code. |
-| `DDG_PARSE_MODE` | `text` | Page extraction mode: `text`, `main`, or `markdown`. |
+| `DDG_PARSE_MODE` | `text` | Page output mode: `text`, `none` (raw HTML), or `markdown`. |
 | `DDG_SEARCH_BACKEND` | build default | Advisory search backend name (webio always performs the request). |
 | `DDG_SEARCH_RPM`, `DDG_FETCH_RPM`, `DDG_FETCH_HOST_RPM` | `30`, `20`, `0` | Rate limits (requests per minute). |
 | `DDG_CACHE_TTL`, `DDG_CACHE_MAX_ENTRIES` | `300`, `64` | Fetch cache lifetime and size. |

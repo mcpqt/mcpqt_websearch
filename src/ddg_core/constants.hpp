@@ -21,7 +21,7 @@ inline const QString kCompiledFetchBackend = QStringLiteral("qt");
 
 // server.py: SUPPORTED_PARSE_MODES
 inline const QStringList kSupportedParseModes = {QStringLiteral("text"),
-                                                 QStringLiteral("main"),
+                                                 QStringLiteral("none"),
                                                  QStringLiteral("markdown")};
 
 }  // namespace ddg

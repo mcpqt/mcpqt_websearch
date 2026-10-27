@@ -19,15 +19,6 @@
 namespace ddg::html {
 namespace {
 
-const char* const kMainSelectors[] = {
-    "article", "main", "[role='main']", "#content", "#main", "#main-content",
-    ".post-content", ".entry-content", ".article-body", ".article-content",
-    ".post-body", ".markdown-body",
-};
-
-const QStringList kTextChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
-                                     QStringLiteral("nav"), QStringLiteral("header"),
-                                     QStringLiteral("footer")};
 const QStringList kBlockTags = {
     QStringLiteral("address"), QStringLiteral("article"), QStringLiteral("aside"),
     QStringLiteral("blockquote"), QStringLiteral("dd"), QStringLiteral("details"),
@@ -45,10 +36,9 @@ const QStringList kBlockTags = {
 
 bool is_block_tag(const QString& tag) { return kBlockTags.contains(tag); }
 
-const QStringList kMainChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
+const QStringList kTextChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
                                      QStringLiteral("nav"), QStringLiteral("header"),
-                                     QStringLiteral("footer"), QStringLiteral("aside"),
-                                     QStringLiteral("form"), QStringLiteral("noscript")};
+                                     QStringLiteral("footer")};
 
 void strip_chrome(lxb_dom_node_t* root, const QStringList& tags) {
     std::vector<lxb_dom_node_t*> to_remove;
@@ -57,15 +47,6 @@ void strip_chrome(lxb_dom_node_t* root, const QStringList& tags) {
         to_remove.insert(to_remove.end(), found.begin(), found.end());
     }
     for (auto* node : to_remove) decompose(node);
-}
-
-lxb_dom_node_t* select_main_root(lxb_dom_node_t* root) {
-    for (const char* selector : kMainSelectors) {
-        auto* found = select_one(root, QString::fromLatin1(selector));
-        if (found && get_text(found, QStringLiteral(" "), true).size() >= 40) return found;
-    }
-    if (auto* body = find(root, QStringLiteral("body"))) return body;
-    return root;
 }
 
 QString safe_markdown_href(const QString& href) {
@@ -271,10 +252,9 @@ QString html_to_markdown(lxb_dom_node_t* root) {
 }  // namespace
 
 QString html_to_text(const QString& html, const QString& mode, const QString& base_url) {
-    if (mode != QStringLiteral("text") && mode != QStringLiteral("main") &&
-        mode != QStringLiteral("markdown")) {
+    if (mode != QStringLiteral("text") && mode != QStringLiteral("markdown")) {
         throw InvalidArgument(
-            QStringLiteral("Unknown parse mode '%1'. Supported: text, main, markdown")
+            QStringLiteral("Unknown parse mode '%1'. Supported: text, markdown")
                 .arg(mode));
     }
 
@@ -285,7 +265,7 @@ QString html_to_text(const QString& html, const QString& mode, const QString& ba
     }
 
     // Readability needs a body with readable content. For tiny/structural
-    // documents fall back to the original main-content selector heuristic.
+    // documents fall back to rendering the document body directly.
     Document doc = Document::parse(html);
     if (!doc.valid()) return QString();
 
@@ -294,12 +274,7 @@ QString html_to_text(const QString& html, const QString& mode, const QString& ba
         strip_chrome(root, kTextChromeTags);
         return render_plain_text(root);
     }
-    strip_chrome(root, kMainChromeTags);
-    lxb_dom_node_t* content = select_main_root(root);
-    if (mode == QStringLiteral("main")) {
-        return render_plain_text(content);
-    }
-    return html_to_markdown(content);
+    return html_to_markdown(root);
 }
 
 }  // namespace ddg::html

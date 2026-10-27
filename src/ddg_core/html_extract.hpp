@@ -10,8 +10,9 @@
 
 namespace ddg::html {
 
-/// mode is "text" (default), "main" or "markdown". `base_url` is the page URL
-/// used to resolve relative links while extracting the article.
+/// mode is "text" (default) or "markdown". `base_url` is the page URL used to
+/// resolve relative links while extracting the article. "none" is handled by
+/// the fetcher and bypasses extraction entirely.
 QString html_to_text(const QString& html, const QString& mode = QStringLiteral("text"),
                      const QString& base_url = QString());
 
