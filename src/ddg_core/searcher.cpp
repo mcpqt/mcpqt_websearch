@@ -17,38 +17,38 @@
 namespace ddg {
 namespace {
 
-const QString kBaseUrl = QStringLiteral("https://lite.duckduckgo.com/lite");
+const QString kBaseUrl = "https://lite.duckduckgo.com/lite";
 
 const QMap<QString, QString>& search_headers() {
     static const QMap<QString, QString> headers = {
-        {QStringLiteral("User-Agent"),
-         QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like "
-                        "Gecko) Chrome/139.0.0.0 Safari/537.36")},
-        {QStringLiteral("Accept"),
-         QStringLiteral("text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,"
-                        "image/apng,*/*;q=0.8")},
-        {QStringLiteral("Accept-Language"), QStringLiteral("en-US,en;q=0.9")},
-        {QStringLiteral("Accept-Encoding"), QStringLiteral("gzip, deflate")},
-        {QStringLiteral("Connection"), QStringLiteral("keep-alive")},
-        {QStringLiteral("Sec-Fetch-Dest"), QStringLiteral("document")},
-        {QStringLiteral("Sec-Fetch-Mode"), QStringLiteral("navigate")},
-        {QStringLiteral("Sec-Fetch-Site"), QStringLiteral("same-origin")},
-        {QStringLiteral("Sec-Fetch-User"), QStringLiteral("?1")},
-        {QStringLiteral("Referer"), QStringLiteral("https://duckduckgo.com/")},
-        {QStringLiteral("Sec-Ch-Ua"),
-         QStringLiteral("\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\"")},
-        {QStringLiteral("Sec-Ch-Ua-Mobile"), QStringLiteral("?0")},
-        {QStringLiteral("Sec-Ch-Ua-Platform"), QStringLiteral("\"Windows\"")},
-        {QStringLiteral("Upgrade-Insecure-Requests"), QStringLiteral("1")},
+        {"User-Agent",
+         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like "
+                        "Gecko) Chrome/139.0.0.0 Safari/537.36"},
+        {"Accept",
+         "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,"
+                        "image/apng,*/*;q=0.8"},
+        {"Accept-Language", "en-US,en;q=0.9"},
+        {"Accept-Encoding", "gzip, deflate"},
+        {"Connection", "keep-alive"},
+        {"Sec-Fetch-Dest", "document"},
+        {"Sec-Fetch-Mode", "navigate"},
+        {"Sec-Fetch-Site", "same-origin"},
+        {"Sec-Fetch-User", "?1"},
+        {"Referer", "https://duckduckgo.com/"},
+        {"Sec-Ch-Ua",
+         "\"Not;A=Brand\";v=\"99\", \"Google Chrome\";v=\"139\", \"Chromium\";v=\"139\""},
+        {"Sec-Ch-Ua-Mobile", "?0"},
+        {"Sec-Ch-Ua-Platform", "\"Windows\""},
+        {"Upgrade-Insecure-Requests", "1"},
     };
     return headers;
 }
 
 QString lite_safe_search_value(SafeSearchMode m) {
     switch (m) {
-        case SafeSearchMode::Strict:   return QStringLiteral("1");
+        case SafeSearchMode::Strict:   return "1";
         case SafeSearchMode::Moderate: return QString();
-        case SafeSearchMode::Off:      return QStringLiteral("-1");
+        case SafeSearchMode::Off:      return "-1";
     }
     return QString();
 }
@@ -58,27 +58,27 @@ QString lite_safe_search_value(SafeSearchMode m) {
 /// searching without a time filter.
 QString normalize_timelimit(const QString& raw) {
     const QString v = to_lower(trim(raw));
-    if (v.isEmpty() || v == QStringLiteral("all") || v == QStringLiteral("any") ||
-        v == QStringLiteral("none"))
+    if (v.isEmpty() || v == "all" || v == "any" ||
+        v == "none")
         return QString();
-    if (v == QStringLiteral("d") || v == QStringLiteral("day") ||
-        v == QStringLiteral("1d") || v == QStringLiteral("past-day"))
-        return QStringLiteral("d");
-    if (v == QStringLiteral("w") || v == QStringLiteral("week") ||
-        v == QStringLiteral("1w") || v == QStringLiteral("7d") ||
-        v == QStringLiteral("past-week"))
-        return QStringLiteral("w");
-    if (v == QStringLiteral("m") || v == QStringLiteral("month") ||
-        v == QStringLiteral("1m") || v == QStringLiteral("30d") ||
-        v == QStringLiteral("past-month"))
-        return QStringLiteral("m");
-    if (v == QStringLiteral("y") || v == QStringLiteral("year") ||
-        v == QStringLiteral("1y") || v == QStringLiteral("365d") ||
-        v == QStringLiteral("past-year"))
-        return QStringLiteral("y");
+    if (v == "d" || v == "day" ||
+        v == "1d" || v == "past-day")
+        return "d";
+    if (v == "w" || v == "week" ||
+        v == "1w" || v == "7d" ||
+        v == "past-week")
+        return "w";
+    if (v == "m" || v == "month" ||
+        v == "1m" || v == "30d" ||
+        v == "past-month")
+        return "m";
+    if (v == "y" || v == "year" ||
+        v == "1y" || v == "365d" ||
+        v == "past-year")
+        return "y";
     throw InvalidArgument(
-        QStringLiteral("Invalid timelimit '%1'; expected day, week, month, year "
-                       "(or d/w/m/y), or empty for no filter")
+        QString("Invalid timelimit '%1'; expected day, week, month, year "
+                "(or d/w/m/y), or empty for no filter")
             .arg(raw));
 }
 
@@ -94,7 +94,7 @@ bool is_search_block(int status, const QString& html) {
 }
 
 QString decode_uddg(const QString& link) {
-    const QString prefix = QStringLiteral("//duckduckgo.com/l/?uddg=");
+    const QString prefix = "//duckduckgo.com/l/?uddg=";
     if (!link.startsWith(prefix)) return link;
     QString        enc = link.mid(prefix.size());
     const qsizetype amp = enc.indexOf(QLatin1Char('&'));
@@ -107,7 +107,7 @@ DuckDuckGoSearcher::DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegist
       links_(std::move(links)),
       rate_limiter_(make_rate_limiter(config_.rate_limit_strategy, config_.requests_per_minute)) {
     if (!config_.transport) {
-        throw HttpError(QStringLiteral("no HTTP transport configured"));
+        throw HttpError("no HTTP transport configured");
     }
 }
 
@@ -120,8 +120,8 @@ QString DuckDuckGoSearcher::display_url(const QString& url) const {
     }
     const QString token = links_->shorten(url);
     return token +
-           QStringLiteral(" (long URL shortened; pass to fetch_content as-is, or call "
-                          "expand_link to get the full URL)");
+           " (long URL shortened; pass to fetch_content as-is, or call "
+                          "expand_link to get the full URL)";
 }
 
 QString DuckDuckGoSearcher::request(const QString& data_query,
@@ -131,17 +131,17 @@ QString DuckDuckGoSearcher::request(const QString& data_query,
                                     const QString& timelimit,
                                     const LogFn&   log) {
     QMap<QString, QString> data = {
-        {QStringLiteral("q"), data_query},
-        {QStringLiteral("s"), s},
-        {QStringLiteral("o"), QStringLiteral("json")},
-        {QStringLiteral("api"), QStringLiteral("d.js")},
-        {QStringLiteral("vqd"), vqd},
-        {QStringLiteral("kl"), data_region},
-        {QStringLiteral("bing_market"), data_region},
+        {"q", data_query},
+        {"s", s},
+        {"o", "json"},
+        {"api", "d.js"},
+        {"vqd", vqd},
+        {"kl", data_region},
+        {"bing_market", data_region},
     };
-    if (!timelimit.isEmpty()) data.insert(QStringLiteral("df"), timelimit);
+    if (!timelimit.isEmpty()) data.insert("df", timelimit);
     const QString p = lite_safe_search_value(config_.safe_search);
-    if (!p.isEmpty()) data.insert(QStringLiteral("p"), p);
+    if (!p.isEmpty()) data.insert("p", p);
 
     HttpRequest request;
     request.is_post    = true;
@@ -159,8 +159,8 @@ QString DuckDuckGoSearcher::request(const QString& data_query,
     }
     if (is_search_block(resp.status, resp.body)) {
         log_info(log,
-                 QStringLiteral("DuckDuckGo returned a block signal (HTTP %1) to this "
-                                "backend; the installed build only includes the '%2' backend.")
+                 QString("DuckDuckGo returned a block signal (HTTP %1) to this "
+                         "backend; the installed build only includes the '%2' backend.")
                      .arg(resp.status)
                      .arg(kCompiledFetchBackend));
     }
@@ -186,18 +186,18 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const QString& query,
         }
 
         log_info(log,
-                 QStringLiteral("Searching DuckDuckGo for: %1 (SafeSearch: %2, "
-                                "Region: %3, Time: %4, backend=%5)")
+                 QString("Searching DuckDuckGo for: %1 (SafeSearch: %2, "
+                         "Region: %3, Time: %4, backend=%5)")
                      .arg(query)
                      .arg(safe_search_name(config_.safe_search))
-                     .arg(effective_region.isEmpty() ? QStringLiteral("default")
+                     .arg(effective_region.isEmpty() ? "default"
                                                      : effective_region)
-                     .arg(effective_timelimit.isEmpty() ? QStringLiteral("any")
+                     .arg(effective_timelimit.isEmpty() ? "any"
                                                        : effective_timelimit)
                      .arg(config_.backend));
 
         std::vector<SearchResult> results;
-        QString                   s = QStringLiteral("0");
+        QString                   s = "0";
         QString                   vqd;
 
         constexpr int kMaxPages = 5;
@@ -211,8 +211,8 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const QString& query,
                 break;
             }
 
-            if (html.contains(QStringLiteral("No more results.")) ||
-                html.contains(QStringLiteral("No results."))) {
+            if (html.contains("No more results.") ||
+                html.contains("No results.")) {
                 break;
             }
 
@@ -231,16 +231,16 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const QString& query,
             vqd = next.vqd;
         }
 
-        log_info(log, QStringLiteral("Successfully found %1 results").arg(results.size()));
+        log_info(log, QString("Successfully found %1 results").arg(results.size()));
         return results;
     } catch (const TimeoutError&) {
-        log_error(log, QStringLiteral("Search request timed out"));
+        log_error(log, "Search request timed out");
         return {};
     } catch (const HttpError& e) {
-        log_error(log, QStringLiteral("HTTP error occurred: %1").arg(e.message()));
+        log_error(log, QString("HTTP error occurred: %1").arg(e.message()));
         return {};
     } catch (const std::exception& e) {
-        log_error(log, QStringLiteral("Unexpected error during search: %1")
+        log_error(log, QString("Unexpected error during search: %1")
                            .arg(QString::fromUtf8(e.what())));
         return {};
     }
@@ -249,20 +249,19 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const QString& query,
 QString DuckDuckGoSearcher::format_results_for_llm(
     const std::vector<SearchResult>& results) const {
     if (results.empty()) {
-        return QStringLiteral(
-            "No results were found for your search query. This could be due to "
+        return "No results were found for your search query. This could be due to "
             "DuckDuckGo's bot detection or the query returned no matches. Please try "
             "rephrasing your search or try again in a few minutes. If this persists, "
-            "DuckDuckGo may be blocking this server; try again in a few minutes.");
+            "DuckDuckGo may be blocking this server; try again in a few minutes.";
     }
 
-    QString out = QStringLiteral("Found %1 search results:\n").arg(results.size());
+    QString out = QString("Found %1 search results:\n").arg(results.size());
     for (const auto& result : results) {
         out += QLatin1Char('\n');
-        out += QString::number(result.position) + QStringLiteral(". ") + result.title +
+        out += QString::number(result.position) + ". " + result.title +
                QLatin1Char('\n');
-        out += QStringLiteral("   URL: ") + display_url(result.link) + QLatin1Char('\n');
-        out += QStringLiteral("   Summary: ") + result.snippet + QLatin1Char('\n');
+        out += "   URL: " + display_url(result.link) + QLatin1Char('\n');
+        out += "   Summary: " + result.snippet + QLatin1Char('\n');
     }
     return out;
 }

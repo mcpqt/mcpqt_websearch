@@ -54,13 +54,13 @@ QVariantMap to_variant_map(const QMap<QString, QString>& values) {
 
 [[noreturn]] void throw_transport_error(const QString& message) {
     const QString lower = message.toLower();
-    if (lower.contains(QStringLiteral("timed out"))) {
+    if (lower.contains("timed out")) {
         throw TimeoutError(message);
     }
-    if (lower.contains(QStringLiteral("connection")) ||
-        lower.contains(QStringLiteral("refused")) ||
-        lower.contains(QStringLiteral("host not found")) ||
-        lower.contains(QStringLiteral("network"))) {
+    if (lower.contains("connection") ||
+        lower.contains("refused") ||
+        lower.contains("host not found") ||
+        lower.contains("network")) {
         throw ConnectError(message);
     }
     throw HttpError(message);
@@ -77,21 +77,19 @@ Transport make_webio_transport(HostCallFunc call_func) {
         try {
             if (request.is_post) {
                 handle = call_func(
-                    QStringLiteral(
-                        "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)"),
+                    "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)",
                     { QVariant(url), wrap_variant(QVariant(to_variant_map(request.form))),
                       wrap_variant(QVariant(headers)),
                       QVariant(static_cast<uint>(request.timeout_ms)) });
             } else {
                 handle = call_func(
-                    QStringLiteral(
-                        "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant,uint32_t)"),
+                    "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant,uint32_t)",
                     { QVariant(url), wrap_variant(QVariant(headers)),
                       QVariant(static_cast<uint>(request.timeout_ms)) });
             }
         } catch (const std::exception& e) {
             const QVariant w_headers = wrap_variant(QVariant(headers));
-            throw HttpError(QStringLiteral("webio call failed: %1 [url=%2 headers=%3 inner=%4 timeout=%5]")
+            throw HttpError(QString("webio call failed: %1 [url=%2 headers=%3 inner=%4 timeout=%5]")
                                 .arg(QString::fromUtf8(e.what()))
                                 .arg(QVariant(url).metaType().name())
                                 .arg(w_headers.metaType().name())
@@ -103,23 +101,22 @@ Transport make_webio_transport(HostCallFunc call_func) {
         try {
             future = handle.value<QFuture<QVariant>>();
         } catch (const std::exception& e) {
-            throw HttpError(QStringLiteral("webio returned an invalid future: %1")
+            throw HttpError(QString("webio returned an invalid future: %1")
                                 .arg(QString::fromUtf8(e.what())));
         }
         if (!future.isValid()) {
-            throw HttpError(QStringLiteral(
-                "webio returned an invalid future (handle type=%1 valid=%2 convertible=%3)")
+            throw HttpError(QString("webio returned an invalid future (handle type=%1 valid=%2 convertible=%3)")
                 .arg(QString::fromLatin1(handle.metaType().name()))
-                .arg(handle.isValid() ? QStringLiteral("yes") : QStringLiteral("no"))
-                .arg(handle.canConvert<QFuture<QVariant>>() ? QStringLiteral("yes")
-                                                             : QStringLiteral("no")));
+                .arg(handle.isValid() ? "yes" : "no")
+                .arg(handle.canConvert<QFuture<QVariant>>() ? "yes"
+                                                             : "no"));
         }
 
         QVariant resolved;
         try {
             resolved = wait_for_future(future);
         } catch (const std::exception& e) {
-            throw HttpError(QStringLiteral("webio request failed: %1")
+            throw HttpError(QString("webio request failed: %1")
                                 .arg(QString::fromUtf8(e.what())));
         }
 
@@ -127,19 +124,19 @@ Transport make_webio_transport(HostCallFunc call_func) {
 
         // webio's plugin wrapper may set ok=true even for network failures, so
         // treat the presence of an error as authoritative.
-        if (map.contains(QStringLiteral("error"))) {
-            throw_transport_error(map.value(QStringLiteral("error")).toString());
+        if (map.contains("error")) {
+            throw_transport_error(map.value("error").toString());
         }
-        if (!map.contains(QStringLiteral("status"))) {
-            throw HttpError(QStringLiteral("webio returned an invalid response"));
+        if (!map.contains("status")) {
+            throw HttpError("webio returned an invalid response");
         }
 
         HttpResponse response;
-        response.status   = map.value(QStringLiteral("status")).toInt();
-        response.body     = map.value(QStringLiteral("body")).toString();
-        response.location = map.value(QStringLiteral("location")).toString();
+        response.status   = map.value("status").toInt();
+        response.body     = map.value("body").toString();
+        response.location = map.value("location").toString();
 
-        const QVariantMap response_headers = map.value(QStringLiteral("headers")).toMap();
+        const QVariantMap response_headers = map.value("headers").toMap();
         for (auto it = response_headers.cbegin(); it != response_headers.cend(); ++it) {
             response.headers.insert(it.key().toLower(), it.value().toString());
         }

@@ -16,7 +16,7 @@ HostRateLimiter::HostRateLimiter(QString strategy, int requests_per_minute)
 
 void HostRateLimiter::acquire(const QString& url) {
     QString host = url_hostname(url);
-    if (host.isEmpty()) host = QStringLiteral("unknown");
+    if (host.isEmpty()) host = "unknown";
 
     RateLimiterBase* limiter = nullptr;
     {

@@ -60,38 +60,37 @@ int main() {
                 call.signature = signature;
                 call.args      = args;
                 QVariantMap headers;
-                headers.insert(QStringLiteral("content-type"),
-                               QStringLiteral("text/plain"));
+                headers.insert("content-type",
+                               "text/plain");
                 QVariantMap result;
-                result.insert(QStringLiteral("status"), 200);
-                result.insert(QStringLiteral("body"), QStringLiteral("hello"));
-                result.insert(QStringLiteral("headers"), headers);
-                result.insert(QStringLiteral("location"), QString());
-                result.insert(QStringLiteral("ok"), true);
+                result.insert("status", 200);
+                result.insert("body", "hello");
+                result.insert("headers", headers);
+                result.insert("location", QString());
+                result.insert("ok", true);
                 return finished_future(result);
             });
 
         ddg::HttpRequest request;
-        request.url     = QStringLiteral("https://example.com/");
-        request.headers = {{QStringLiteral("X-Test"), QStringLiteral("value")}};
+        request.url     = "https://example.com/";
+        request.headers = {{"X-Test", "value"}};
         const ddg::HttpResponse response = transport(request);
 
         check(call.signature ==
-                  QStringLiteral(
-                      "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant,uint32_t)"),
-              QStringLiteral("GET signature"));
-        check(call.args.size() == 3, QStringLiteral("GET argument count"));
-        check(call.args.at(0).toString() == QStringLiteral("https://example.com/"),
-              QStringLiteral("GET url"));
+                  "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant,uint32_t)",
+              "GET signature");
+        check(call.args.size() == 3, "GET argument count");
+        check(call.args.at(0).toString() == "https://example.com/",
+              "GET url");
         const QVariantMap sent_headers = map_arg(call.args.at(1));
-        check(sent_headers.value(QStringLiteral("X-Test")).toString() ==
-                  QStringLiteral("value"),
-              QStringLiteral("GET request header"));
-        check(response.status == 200, QStringLiteral("GET status"));
-        check(response.body == QStringLiteral("hello"), QStringLiteral("GET body"));
-        check(response.header(QStringLiteral("content-type")) ==
-                  QStringLiteral("text/plain"),
-              QStringLiteral("GET response header"));
+        check(sent_headers.value("X-Test").toString() ==
+                  "value",
+              "GET request header");
+        check(response.status == 200, "GET status");
+        check(response.body == "hello", "GET body");
+        check(response.header("content-type") ==
+                  "text/plain",
+              "GET response header");
     }
 
     // POST conversion and argument marshalling.
@@ -102,29 +101,28 @@ int main() {
                 call.signature = signature;
                 call.args      = args;
                 QVariantMap result;
-                result.insert(QStringLiteral("status"), 201);
-                result.insert(QStringLiteral("body"), QStringLiteral("posted"));
-                result.insert(QStringLiteral("headers"), QVariantMap{});
-                result.insert(QStringLiteral("ok"), true);
+                result.insert("status", 201);
+                result.insert("body", "posted");
+                result.insert("headers", QVariantMap{});
+                result.insert("ok", true);
                 return finished_future(result);
             });
 
         ddg::HttpRequest request;
         request.is_post = true;
-        request.url     = QStringLiteral("https://example.com/api");
-        request.form    = {{QStringLiteral("q"), QStringLiteral("term")}};
+        request.url     = "https://example.com/api";
+        request.form    = {{"q", "term"}};
         const ddg::HttpResponse response = transport(request);
 
         check(call.signature ==
-                  QStringLiteral(
-                      "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)"),
-              QStringLiteral("POST signature"));
-        check(call.args.size() == 4, QStringLiteral("POST argument count"));
+                  "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)",
+              "POST signature");
+        check(call.args.size() == 4, "POST argument count");
         const QVariantMap form = map_arg(call.args.at(1));
-        check(form.value(QStringLiteral("q")).toString() == QStringLiteral("term"),
-              QStringLiteral("POST form"));
-        check(response.status == 201, QStringLiteral("POST status"));
-        check(response.body == QStringLiteral("posted"), QStringLiteral("POST body"));
+        check(form.value("q").toString() == "term",
+              "POST form");
+        check(response.status == 201, "POST status");
+        check(response.body == "posted", "POST body");
     }
 
     // webio may leave ok=true on network failure; error must win.
@@ -132,13 +130,13 @@ int main() {
         const ddg::Transport transport = ddg::make_webio_transport(
             [](const QString&, const QVariantList&) -> QVariant {
                 QVariantMap result;
-                result.insert(QStringLiteral("ok"), true);
-                result.insert(QStringLiteral("error"),
-                              QStringLiteral("request timed out: slow"));
+                result.insert("ok", true);
+                result.insert("error",
+                              "request timed out: slow");
                 return finished_future(result);
             });
         ddg::HttpRequest request;
-        request.url = QStringLiteral("https://example.com/");
+        request.url = "https://example.com/";
         bool caught = false;
         try {
             transport(request);
@@ -146,19 +144,19 @@ int main() {
             caught = true;
         } catch (...) {
         }
-        check(caught, QStringLiteral("timeout error mapping"));
+        check(caught, "timeout error mapping");
     }
 
     {
         const ddg::Transport transport = ddg::make_webio_transport(
             [](const QString&, const QVariantList&) -> QVariant {
                 QVariantMap result;
-                result.insert(QStringLiteral("error"),
-                              QStringLiteral("Connection refused"));
+                result.insert("error",
+                              "Connection refused");
                 return finished_future(result);
             });
         ddg::HttpRequest request;
-        request.url = QStringLiteral("https://example.com/");
+        request.url = "https://example.com/";
         bool caught = false;
         try {
             transport(request);
@@ -166,7 +164,7 @@ int main() {
             caught = true;
         } catch (...) {
         }
-        check(caught, QStringLiteral("connect error mapping"));
+        check(caught, "connect error mapping");
     }
 
     // A throwing host call becomes an HttpError.
@@ -176,7 +174,7 @@ int main() {
                 throw std::runtime_error("webio not loaded");
             });
         ddg::HttpRequest request;
-        request.url = QStringLiteral("https://example.com/");
+        request.url = "https://example.com/";
         bool caught = false;
         try {
             transport(request);
@@ -184,7 +182,7 @@ int main() {
             caught = true;
         } catch (...) {
         }
-        check(caught, QStringLiteral("missing webio mapping"));
+        check(caught, "missing webio mapping");
     }
 
     if (g_failures != 0) {

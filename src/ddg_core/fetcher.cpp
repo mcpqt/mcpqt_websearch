@@ -20,7 +20,7 @@ namespace {
 constexpr int kMaxRedirects = 5;
 
 const QString kFetchUserAgent =
-    QStringLiteral("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
 bool is_redirect(int status) {
     return status == 301 || status == 302 || status == 303 || status == 307 || status == 308;
@@ -42,7 +42,7 @@ WebContentFetcher::WebContentFetcher(Config config, std::shared_ptr<LinkRegistry
                          : nullptr),
       m_cache(m_config.cache_ttl, m_config.cache_max_entries) {
     if (!m_config.transport) {
-        throw HttpError(QStringLiteral("no HTTP transport configured"));
+        throw HttpError("no HTTP transport configured");
     }
 }
 
@@ -59,7 +59,7 @@ QString WebContentFetcher::fetch(const QString& url) {
         guard_url(current);
         HttpRequest request;
         request.url        = current;
-        request.headers    = {{QStringLiteral("User-Agent"), kFetchUserAgent}};
+        request.headers    = {{"User-Agent", kFetchUserAgent}};
         request.timeout_ms = 30000;
         HttpResponse resp  = m_config.transport(request);
         if (resp.status == 429) {
@@ -75,7 +75,7 @@ QString WebContentFetcher::fetch(const QString& url) {
         }
         return resp.body;
     }
-    throw HttpError(QStringLiteral("too many redirects (>%1)").arg(kMaxRedirects));
+    throw HttpError(QString("too many redirects (>%1)").arg(kMaxRedirects));
 }
 
 QString WebContentFetcher::fetch_and_parse(const QString& url_in,
@@ -93,7 +93,7 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
     const QString effective_mode =
         to_lower(parse_mode.isNull() ? m_config.parse_mode : parse_mode);
     if (!contains(kSupportedParseModes, effective_mode)) {
-        return QStringLiteral("Error: Unknown parse_mode '%1'. Supported: text, raw, markdown")
+        return QString("Error: Unknown parse_mode '%1'. Supported: text, raw, markdown")
             .arg(effective_mode);
     }
 
@@ -110,18 +110,18 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
             if (m_host_limiter) m_host_limiter->acquire(url);
             m_rate_limiter->acquire();
 
-            log_info(log, QStringLiteral("Fetching content from: %1 (parse_mode=%2)")
+            log_info(log, QString("Fetching content from: %1 (parse_mode=%2)")
                               .arg(url)
                               .arg(effective_mode));
 
             const QString html = fetch(url);
-            text               = effective_mode == QStringLiteral("raw")
+            text               = effective_mode == "raw"
                                      ? html
                                      : html::html_to_text(html, effective_mode, url);
             if (!cache_key.isNull()) m_cache.set(cache_key, text);
         } else {
-            log_info(log, QStringLiteral("Cache hit for %1 (parse_mode=%2); "
-                                         "skipping download")
+            log_info(log, QString("Cache hit for %1 (parse_mode=%2); "
+                                  "skipping download")
                               .arg(url)
                               .arg(effective_mode));
         }
@@ -136,48 +136,46 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
         const bool is_truncated = start + len < total;
 
         QString metadata =
-            QStringLiteral("\n\n---\n[Content info: Showing characters %1-%2 of %3 total")
+            QString("\n\n---\n[Content info: Showing characters %1-%2 of %3 total")
                 .arg(start)
                 .arg(start + sliced.size())
                 .arg(total);
         if (is_truncated) {
-            metadata += QStringLiteral(". Use start_index=%1 to see more").arg(start + len);
+            metadata += QString(". Use start_index=%1 to see more").arg(start + len);
         }
         if (m_cache.enabled()) {
-            metadata += QStringLiteral(" | cache=") +
-                        (cache_hit ? QStringLiteral("hit") : QStringLiteral("miss"));
+            metadata += QString(" | cache=") +
+                        (cache_hit ? "hit" : "miss");
         }
-        if (effective_mode != QStringLiteral("text")) {
-            metadata += QStringLiteral(" | parse=") + effective_mode;
+        if (effective_mode != "text") {
+            metadata += " | parse=" + effective_mode;
         }
         metadata += QLatin1Char(']');
         sliced += metadata;
 
-        log_info(log, QStringLiteral("Successfully fetched and parsed content (%1 characters)")
+        log_info(log, QString("Successfully fetched and parsed content (%1 characters)")
                           .arg(sliced.size()));
         return sliced;
     } catch (const BlockedUrlError& e) {
-        log_error(log, QStringLiteral("Blocked fetch for %1: %2")
+        log_error(log, QString("Blocked fetch for %1: %2")
                            .arg(url, QString::fromUtf8(e.what())));
-        return QStringLiteral(
-                   "Error: Refusing to fetch %1 (%2). This server blocks requests to "
-                   "private/internal addresses to prevent SSRF. If this is a trusted "
-                   "local deployment, set DDG_ALLOW_PRIVATE_URLS=1 (or pass "
-                   "--allow-private-urls).")
+        return QString("Error: Refusing to fetch %1 (%2). This server blocks requests to "
+                       "private/internal addresses to prevent SSRF. If this is a trusted "
+                       "local deployment, set DDG_ALLOW_PRIVATE_URLS=1 (or pass "
+                       "--allow-private-urls).")
             .arg(url, QString::fromUtf8(e.what()));
     } catch (const TimeoutError&) {
-        log_error(log, QStringLiteral("Request timed out for URL: %1").arg(url));
-        return QStringLiteral("Error: The request timed out while trying to fetch the webpage.");
+        log_error(log, QString("Request timed out for URL: %1").arg(url));
+        return "Error: The request timed out while trying to fetch the webpage.";
     } catch (const HttpError& e) {
-        log_error(log, QStringLiteral("HTTP error occurred while fetching %1: %2")
+        log_error(log, QString("HTTP error occurred while fetching %1: %2")
                            .arg(url, QString::fromUtf8(e.what())));
-        return QStringLiteral("Error: Could not access the webpage (%1)")
+        return QString("Error: Could not access the webpage (%1)")
             .arg(QString::fromUtf8(e.what()));
     } catch (const std::exception& e) {
-        log_error(log, QStringLiteral("Error fetching content from %1: %2")
+        log_error(log, QString("Error fetching content from %1: %2")
                            .arg(url, QString::fromUtf8(e.what())));
-        return QStringLiteral(
-                   "Error: An unexpected error occurred while fetching the webpage (%1)")
+        return QString("Error: An unexpected error occurred while fetching the webpage (%1)")
             .arg(QString::fromUtf8(e.what()));
     }
 }

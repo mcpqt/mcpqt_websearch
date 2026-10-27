@@ -13,7 +13,7 @@ struct HttpResponse {
     int                    status = 0;
     QString                body;
     QMap<QString, QString> headers;   // lower-cased keys
-    QString                location;  // == headers[QStringLiteral("location")]
+    QString                location;  // == headers["location"]
 
     [[nodiscard]] QString header(const QString& name) const {
         return headers.value(name);

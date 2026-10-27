@@ -52,7 +52,7 @@ public:
         QString        backend              = kCompiledFetchBackend;
         Transport      transport;
         int            requests_per_minute  = 30;
-        QString        rate_limit_strategy  = QStringLiteral("sliding");
+        QString        rate_limit_strategy  = "sliding";
         int            ref_url_threshold    = kDefaultRefUrlThreshold;
     };
 

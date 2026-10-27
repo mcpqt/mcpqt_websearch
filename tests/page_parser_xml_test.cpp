@@ -15,7 +15,7 @@ namespace ddg {
 
 // page_parser_xml.cpp calls this; searcher.cpp is not linked into this test.
 QString decode_uddg(const QString& link) {
-    const QString prefix = QStringLiteral("//duckduckgo.com/l/?uddg=");
+    const QString prefix = "//duckduckgo.com/l/?uddg=";
     if (!link.startsWith(prefix)) return link;
     QString         enc = link.mid(prefix.size());
     const qsizetype amp = enc.indexOf(QLatin1Char('&'));
@@ -57,20 +57,20 @@ int main(int argc, char** argv) {
     check(results.size() >= 5, "XML page parser returned too few results");
 
     if (!results.empty()) {
-        check(results.front().title.contains(QStringLiteral("SQL Tryit Editor")),
+        check(results.front().title.contains("SQL Tryit Editor"),
               "first result title");
         check(results.front().link.startsWith(
-                  QStringLiteral("https://www.w3schools.com/sql/trysql.asp")),
+                  "https://www.w3schools.com/sql/trysql.asp"),
               "first result link was not decoded");
-        check(!results.front().link.contains(QStringLiteral("uddg=")),
+        check(!results.front().link.contains("uddg="),
               "first result link still contains the redirect wrapper");
         check(!results.front().snippet.isEmpty(), "first result snippet is empty");
         check(results.front().position == 1, "first result position");
     }
 
     const ddg::LiteNextPage next = ddg::extract_lite_next_page(html);
-    check(next.s == QStringLiteral("10"), "next-page s parameter");
-    check(next.vqd == QStringLiteral("4-121700496490801137926632225534822938806"),
+    check(next.s == "10", "next-page s parameter");
+    check(next.vqd == "4-121700496490801137926632225534822938806",
           "next-page vqd parameter");
 
     if (g_failures != 0) {

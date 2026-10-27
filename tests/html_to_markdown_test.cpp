@@ -59,7 +59,7 @@ int main(int argc, char** argv) {
     }
 
     const QString html     = QString::fromUtf8(file.readAll());
-    const QString markdown = ddg::html::html_to_text(html, QStringLiteral("markdown"));
+    const QString markdown = ddg::html::html_to_text(html, "markdown");
 
     check(!markdown.isEmpty(), "markdown output is empty");
     check(!markdown.contains(QLatin1Char('\0')), "markdown contains NUL bytes");

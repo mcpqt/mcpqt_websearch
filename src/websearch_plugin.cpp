@@ -42,8 +42,8 @@ namespace
       return false;
     }
     const QString s = ddg::to_lower(ddg::trim(v));
-    return s == QStringLiteral("1") || s == QStringLiteral("true")
-           || s == QStringLiteral("yes") || s == QStringLiteral("on");
+    return s == "1" || s == "true"
+           || s == "yes" || s == "on";
   }
 
   std::optional<int> env_int(const char* name, int minimum)
@@ -98,13 +98,13 @@ namespace
       };
 
       // ---- configuration from DDG_* environment variables ----------------
-      QString safe_search_name = QStringLiteral("MODERATE");
+      QString safe_search_name = "MODERATE";
       if(const QString v = env_str("DDG_SAFE_SEARCH"); !v.isNull())
       {
         safe_search_name = ddg::to_lower(ddg::trim(v));
       }
 
-      QString region = QStringLiteral("wt-wt");
+      QString region = "wt-wt";
       if(const QString v = env_str("DDG_REGION"); !v.isNull())
       {
         region = ddg::trim(v);
@@ -126,13 +126,13 @@ namespace
           = env_int("DDG_REF_URL_THRESHOLD", 0).value_or(
               ddg::kDefaultRefUrlThreshold);
 
-      QString rate_strategy = QStringLiteral("sliding");
+      QString rate_strategy = "sliding";
       if(const QString v = env_str("DDG_RATE_LIMIT_STRATEGY"); !v.isNull())
       {
         rate_strategy = ddg::to_lower(ddg::trim(v));
       }
 
-      QString parse_mode = QStringLiteral("markdown");
+      QString parse_mode = "markdown";
       if(const QString v = env_str("DDG_PARSE_MODE"); !v.isNull())
       {
         parse_mode = ddg::to_lower(ddg::trim(v));
@@ -188,7 +188,7 @@ namespace
       }
       catch(const std::exception& e)
       {
-        return QStringLiteral("An error occurred while searching: ")
+        return "An error occurred while searching: "
                + QString::fromUtf8(e.what());
       }
     }
@@ -205,7 +205,7 @@ namespace
       }
       catch(const std::exception& e)
       {
-        return QStringLiteral("An error occurred while fetching: ")
+        return "An error occurred while fetching: "
                + QString::fromUtf8(e.what());
       }
     }

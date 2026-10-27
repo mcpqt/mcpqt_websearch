@@ -42,162 +42,159 @@ constexpr int kDefaultCharThreshold    = 500;
 constexpr int kDefaultNbTopCandidates  = 5;
 
 const StrSet kDefaultTagsToScore = {
-    QStringLiteral("section"), QStringLiteral("h2"), QStringLiteral("h3"),
-    QStringLiteral("h4"),      QStringLiteral("h5"), QStringLiteral("h6"),
-    QStringLiteral("p"),       QStringLiteral("td"), QStringLiteral("pre"),
+    "section", "h2", "h3",
+    "h4",      "h5", "h6",
+    "p",       "td", "pre",
 };
 
 const StrSet kUnlikelyRoles = {
-    QStringLiteral("menu"),  QStringLiteral("menubar"),
-    QStringLiteral("complementary"), QStringLiteral("navigation"),
-    QStringLiteral("alert"), QStringLiteral("alertdialog"),
-    QStringLiteral("dialog"),
+    "menu",  "menubar",
+    "complementary", "navigation",
+    "alert", "alertdialog",
+    "dialog",
 };
 
 const StrSet kDivToPElems = {
-    QStringLiteral("blockquote"), QStringLiteral("dl"), QStringLiteral("div"),
-    QStringLiteral("img"),        QStringLiteral("ol"), QStringLiteral("p"),
-    QStringLiteral("pre"),        QStringLiteral("table"), QStringLiteral("ul"),
+    "blockquote", "dl", "div",
+    "img",        "ol", "p",
+    "pre",        "table", "ul",
 };
 
 const StrSet kAlterToDivExceptions = {
-    QStringLiteral("div"), QStringLiteral("article"), QStringLiteral("section"),
-    QStringLiteral("p"),   QStringLiteral("ol"),      QStringLiteral("ul"),
+    "div", "article", "section",
+    "p",   "ol",      "ul",
 };
 
 const QStringList kPresentationalAttributes = {
-    QStringLiteral("align"),      QStringLiteral("background"),
-    QStringLiteral("bgcolor"),    QStringLiteral("border"),
-    QStringLiteral("cellpadding"), QStringLiteral("cellspacing"),
-    QStringLiteral("frame"),      QStringLiteral("hspace"),
-    QStringLiteral("rules"),      QStringLiteral("style"),
-    QStringLiteral("valign"),     QStringLiteral("vspace"),
+    "align",      "background",
+    "bgcolor",    "border",
+    "cellpadding", "cellspacing",
+    "frame",      "hspace",
+    "rules",      "style",
+    "valign",     "vspace",
 };
 
 const StrSet kDeprecatedSizeElements = {
-    QStringLiteral("table"), QStringLiteral("th"), QStringLiteral("td"),
-    QStringLiteral("hr"),    QStringLiteral("pre"),
+    "table", "th", "td",
+    "hr",    "pre",
 };
 
 const StrSet kPhrasingElems = {
-    QStringLiteral("abbr"),   QStringLiteral("audio"),  QStringLiteral("b"),
-    QStringLiteral("bdo"),    QStringLiteral("br"),     QStringLiteral("button"),
-    QStringLiteral("cite"),   QStringLiteral("code"),   QStringLiteral("data"),
-    QStringLiteral("datalist"), QStringLiteral("dfn"),  QStringLiteral("em"),
-    QStringLiteral("embed"),  QStringLiteral("i"),      QStringLiteral("img"),
-    QStringLiteral("input"),  QStringLiteral("kbd"),    QStringLiteral("label"),
-    QStringLiteral("mark"),   QStringLiteral("math"),   QStringLiteral("meter"),
-    QStringLiteral("noscript"), QStringLiteral("object"), QStringLiteral("output"),
-    QStringLiteral("progress"), QStringLiteral("q"),    QStringLiteral("ruby"),
-    QStringLiteral("samp"),   QStringLiteral("script"), QStringLiteral("select"),
-    QStringLiteral("small"),  QStringLiteral("span"),   QStringLiteral("strong"),
-    QStringLiteral("sub"),    QStringLiteral("sup"),    QStringLiteral("textarea"),
-    QStringLiteral("time"),   QStringLiteral("var"),    QStringLiteral("wbr"),
+    "abbr",   "audio",  "b",
+    "bdo",    "br",     "button",
+    "cite",   "code",   "data",
+    "datalist", "dfn",  "em",
+    "embed",  "i",      "img",
+    "input",  "kbd",    "label",
+    "mark",   "math",   "meter",
+    "noscript", "object", "output",
+    "progress", "q",    "ruby",
+    "samp",   "script", "select",
+    "small",  "span",   "strong",
+    "sub",    "sup",    "textarea",
+    "time",   "var",    "wbr",
 };
 
-const QStringList kClassesToPreserve = {QStringLiteral("page")};
+const QStringList kClassesToPreserve = {"page"};
 
 const QRegularExpression& reUnlikely() {
-    static const QRegularExpression re(QStringLiteral(
-        "-ad-|ai2html|banner|breadcrumbs|combx|comment|community|cover-wrap|disqus|"
+    static const QRegularExpression re("-ad-|ai2html|banner|breadcrumbs|combx|comment|community|cover-wrap|disqus|"
         "extra|footer|gdpr|header|legends|menu|related|remark|replies|rss|shoutbox|"
         "sidebar|skyscraper|social|sponsor|supplemental|ad-break|agegate|pagination|"
-        "pager|popup|yom-remote"),
+        "pager|popup|yom-remote",
         QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& reMaybeCandidate() {
     static const QRegularExpression re(
-        QStringLiteral("and|article|body|column|content|main|mathjax|shadow"),
+        "and|article|body|column|content|main|mathjax|shadow",
         QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& rePositive() {
     static const QRegularExpression re(
-        QStringLiteral("article|body|content|entry|hentry|h-entry|main|page|"
-                       "pagination|post|text|blog|story"),
+        "article|body|content|entry|hentry|h-entry|main|page|"
+                       "pagination|post|text|blog|story",
         QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& reNegative() {
     static const QRegularExpression re(
-        QStringLiteral("-ad-|hidden|^hid$| hid$| hid |^hid |banner|combx|comment|"
+        "-ad-|hidden|^hid$| hid$| hid |^hid |banner|combx|comment|"
                        "com-|contact|footer|gdpr|masthead|media|meta|outbrain|promo|"
                        "related|scroll|share|shoutbox|sidebar|skyscraper|sponsor|"
-                       "shopping|tags|widget"),
+                       "shopping|tags|widget",
         QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& reByline() {
     static const QRegularExpression re(
-        QStringLiteral("byline|author|dateline|writtenby|p-author"),
+        "byline|author|dateline|writtenby|p-author",
         QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& reShareElements() {
-    static const QRegularExpression re(QStringLiteral("(\\b|_)(share|sharedaddy)(\\b|_)"),
+    static const QRegularExpression re("(\\b|_)(share|sharedaddy)(\\b|_)",
                                        QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& reVideos() {
-    static const QRegularExpression re(QStringLiteral(
-        "//(www\\.)?((dailymotion|youtube|youtube-nocookie|player\\.vimeo|v\\.qq|"
+    static const QRegularExpression re("//(www\\.)?((dailymotion|youtube|youtube-nocookie|player\\.vimeo|v\\.qq|"
         "bilibili|live\\.bilibili)\\.com|(archive|upload\\.wikimedia)\\.org|"
-        "player\\.twitch\\.tv)"),
+        "player\\.twitch\\.tv)",
         QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& reAdWords() {
     static const QRegularExpression re(
-        QStringLiteral("^(ad(vertising|vertisement)?|pub(licit\xc3\xa9)?|werb(ung)?|"
+        "^(ad(vertising|vertisement)?|pub(licit\xc3\xa9)?|werb(ung)?|"
                        "\xe5\xb9\xbf\xe5\x91\x8a|"
                        "\xd0\xa0\xd0\xb5\xd0\xba\xd0\xbb\xd0\xb0\xd0\xbc\xd0\xb0|"
-                       "Anuncio)$"),
+                       "Anuncio)$",
         QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
     return re;
 }
 const QRegularExpression& reLoadingWords() {
     static const QRegularExpression re(
-        QStringLiteral("^((loading|"
+        "^((loading|"
                        "\xe6\xad\xa3\xe5\x9c\xa8\xe5\x8a\xa0\xe8\xbd\xbd|"
                        "\xd0\x97\xd0\xb0\xd0\xb3\xd1\x80\xd1\x83\xd0\xb7\xd0\xba\xd0\xb0|"
-                       "chargement|cargando)(\xe2\x80\xa6|\\.\\.\\.)?)$"),
+                       "chargement|cargando)(\xe2\x80\xa6|\\.\\.\\.)?)$",
         QRegularExpression::CaseInsensitiveOption | QRegularExpression::UseUnicodePropertiesOption);
     return re;
 }
 const QRegularExpression& reCommas() {
-    static const QRegularExpression re(QStringLiteral(
-        "[,\\x{060C}\\x{FE50}\\x{FE10}\\x{FE11}\\x{2E41}\\x{2E34}\\x{2E32}\\x{FF0C}]"));
+    static const QRegularExpression re("[,\\x{060C}\\x{FE50}\\x{FE10}\\x{FE11}\\x{2E41}\\x{2E34}\\x{2E32}\\x{FF0C}]");
     return re;
 }
 const QRegularExpression& reB64DataUrl() {
     static const QRegularExpression re(
-        QStringLiteral("^data:\\s*([^\\s;,]+)\\s*;\\s*base64\\s*,"),
+        "^data:\\s*([^\\s;,]+)\\s*;\\s*base64\\s*,",
         QRegularExpression::CaseInsensitiveOption);
     return re;
 }
 const QRegularExpression& reHashUrl() {
-    static const QRegularExpression re(QStringLiteral("^#.+"));
+    static const QRegularExpression re("^#.+");
     return re;
 }
 const QRegularExpression& reSrcsetUrl() {
-    static const QRegularExpression re(QStringLiteral("(\\S+)(\\s+[\\d.]+[xw])?(\\s*(?:,|$))"));
+    static const QRegularExpression re("(\\S+)(\\s+[\\d.]+[xw])?(\\s*(?:,|$))");
     return re;
 }
 const QRegularExpression& reWhitespace() {
-    static const QRegularExpression re(QStringLiteral("^\\s*$"));
+    static const QRegularExpression re("^\\s*$");
     return re;
 }
 const QRegularExpression& reHasContent() {
-    static const QRegularExpression re(QStringLiteral("\\S$"));
+    static const QRegularExpression re("\\S$");
     return re;
 }
 const QRegularExpression& reNormalize() {
-    static const QRegularExpression re(QStringLiteral("\\s{2,}"));
+    static const QRegularExpression re("\\s{2,}");
     return re;
 }
 const QRegularExpression& reTokenize() {
-    static const QRegularExpression re(QStringLiteral("[^\\w]+"),
+    static const QRegularExpression re("[^\\w]+",
                                        QRegularExpression::UseUnicodePropertiesOption);
     return re;
 }
@@ -264,12 +261,12 @@ QString text_of(Node* node) {
 QString inner_text(Node* node, bool normalize_spaces = true) {
     if (!node) return QString();
     QString text = text_of(node).trimmed();
-    if (normalize_spaces) text.replace(reNormalize(), QStringLiteral(" "));
+    if (normalize_spaces) text.replace(reNormalize(), " ");
     return text;
 }
 
-QString class_name(Node* node) { return attr(node, QStringLiteral("class")); }
-QString node_id(Node* node) { return attr(node, QStringLiteral("id")); }
+QString class_name(Node* node) { return attr(node, "class"); }
+QString node_id(Node* node) { return attr(node, "id"); }
 QString match_string(Node* node) {
     return class_name(node) + QLatin1Char(' ') + node_id(node);
 }
@@ -352,8 +349,8 @@ bool is_phrasing_content(Node* node) {
     if (node->type != LXB_DOM_NODE_TYPE_ELEMENT) return false;
     const QString tag = tag_name(node);
     if (kPhrasingElems.contains(tag)) return true;
-    if (tag == QStringLiteral("a") || tag == QStringLiteral("del") ||
-        tag == QStringLiteral("ins"))
+    if (tag == "a" || tag == "del" ||
+        tag == "ins")
         return every_child_phrasing(node);
     return false;
 }
@@ -380,8 +377,8 @@ bool is_element_without_content(Node* node) {
     Nodes children = element_children(node);
     if (children.empty()) return true;
     return children.size() ==
-           static_cast<size_t>(count_by_tag(node, QStringLiteral("br")) +
-                               count_by_tag(node, QStringLiteral("hr")));
+           static_cast<size_t>(count_by_tag(node, "br") +
+                               count_by_tag(node, "hr"));
 }
 
 bool has_child_block_element(Node* element) {
@@ -414,17 +411,17 @@ Node* remove_and_get_next(Node* node) {
 
 bool is_probably_visible(Node* node) {
     if (!node) return false;
-    const QString style = attr(node, QStringLiteral("style"));
+    const QString style = attr(node, "style");
     const QString lowered = style.toLower();
-    if (lowered.contains(QStringLiteral("display:none")) ||
-        lowered.contains(QStringLiteral("display: none")) ||
-        lowered.contains(QStringLiteral("visibility:hidden")) ||
-        lowered.contains(QStringLiteral("visibility: hidden")))
+    if (lowered.contains("display:none") ||
+        lowered.contains("display: none") ||
+        lowered.contains("visibility:hidden") ||
+        lowered.contains("visibility: hidden"))
         return false;
-    if (has_attr(node, QStringLiteral("hidden"))) return false;
-    if (has_attr(node, QStringLiteral("aria-hidden")) &&
-        attr(node, QStringLiteral("aria-hidden")) == QStringLiteral("true")) {
-        return class_name(node).contains(QStringLiteral("fallback-image"));
+    if (has_attr(node, "hidden")) return false;
+    if (has_attr(node, "aria-hidden") &&
+        attr(node, "aria-hidden") == "true") {
+        return class_name(node).contains("fallback-image");
     }
     return true;
 }
@@ -530,7 +527,7 @@ Node* Readability::set_node_tag(Node* node, const QString& tag) {
 }
 
 void Readability::replace_brs(Node* elem) {
-    for (Node* br : all_by_tag(elem, QStringLiteral("br"))) {
+    for (Node* br : all_by_tag(elem, "br")) {
         if (!br->parent) continue;
         Node* next     = br->next;
         bool  replaced = false;
@@ -571,36 +568,36 @@ void Readability::replace_brs(Node* elem) {
             next = sibling;
         }
         while (p->last_child && is_whitespace(p->last_child)) remove_node(p->last_child);
-        if (p->parent && has_tag(p->parent, "p")) set_node_tag(p->parent, QStringLiteral("div"));
+        if (p->parent && has_tag(p->parent, "p")) set_node_tag(p->parent, "div");
     }
 }
 
 void Readability::prep_document() {
-    remove_nodes(all_by_tag(doc_.root(), QStringLiteral("style")));
-    if (Node* body = find(doc_.root(), QStringLiteral("body"))) replace_brs(body);
-    for (Node* font : all_by_tag(doc_.root(), QStringLiteral("font")))
-        set_node_tag(font, QStringLiteral("span"));
+    remove_nodes(all_by_tag(doc_.root(), "style"));
+    if (Node* body = find(doc_.root(), "body")) replace_brs(body);
+    for (Node* font : all_by_tag(doc_.root(), "font"))
+        set_node_tag(font, "span");
 }
 
 QString Readability::get_article_title() {
     QString cur;
     QString orig;
-    if (Node* title = find(doc_.root(), QStringLiteral("title"))) {
+    if (Node* title = find(doc_.root(), "title")) {
         cur = inner_text(title, false);
         orig = cur;
     }
     if (cur.isEmpty()) return cur;
 
-    const QString separators = QStringLiteral("\\|\\-–—\\\\/>»");
-    QRegularExpression sep_re(QStringLiteral("\\s[") + separators + QStringLiteral("]\\s"));
+    const QString separators = "\\|\\-–—\\\\/>»";
+    QRegularExpression sep_re("\\s[" + separators + "]\\s");
     bool had_hierarchical = false;
 
     auto word_count = [](const QString& s) {
-        return s.split(QRegularExpression(QStringLiteral("\\s+")), Qt::SkipEmptyParts).size();
+        return s.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts).size();
     };
 
     if (sep_re.match(cur).hasMatch()) {
-        had_hierarchical = QRegularExpression(QStringLiteral("\\s[\\\\/>»]\\s")).match(cur).hasMatch();
+        had_hierarchical = QRegularExpression("\\s[\\\\/>»]\\s").match(cur).hasMatch();
         auto it = sep_re.globalMatch(orig);
         int last = -1;
         while (it.hasNext()) {
@@ -610,15 +607,15 @@ QString Readability::get_article_title() {
         if (last > 0) cur = orig.left(last);
         if (word_count(cur) < 3) {
             cur = orig;
-            QRegularExpression first_sep(QStringLiteral("^[^") + separators +
-                                             QStringLiteral("]*[") + separators +
-                                             QStringLiteral("]"),
+            QRegularExpression first_sep("^[^" + separators +
+                                             "]*[" + separators +
+                                             "]",
                                          QRegularExpression::CaseInsensitiveOption);
             cur.remove(first_sep);
         }
-    } else if (cur.contains(QStringLiteral(": "))) {
-        Nodes headings = all_by_tag(doc_.root(), QStringLiteral("h1"));
-        Nodes h2s      = all_by_tag(doc_.root(), QStringLiteral("h2"));
+    } else if (cur.contains(": ")) {
+        Nodes headings = all_by_tag(doc_.root(), "h1");
+        Nodes h2s      = all_by_tag(doc_.root(), "h2");
         headings.insert(headings.end(), h2s.begin(), h2s.end());
         bool matched = false;
         for (Node* h : headings) {
@@ -635,12 +632,12 @@ QString Readability::get_article_title() {
             }
         }
     } else if (cur.size() > 150 || cur.size() < 15) {
-        Nodes h1s = all_by_tag(doc_.root(), QStringLiteral("h1"));
+        Nodes h1s = all_by_tag(doc_.root(), "h1");
         if (h1s.size() == 1) cur = inner_text(h1s.front(), false);
     }
 
     cur = cur.trimmed();
-    cur.replace(reNormalize(), QStringLiteral(" "));
+    cur.replace(reNormalize(), " ");
     const int wc = word_count(cur);
     if (wc <= 4) {
         QString stripped = orig;
@@ -653,11 +650,11 @@ QString Readability::get_article_title() {
 }
 
 QJsonObject Readability::get_json_ld() {
-    for (Node* script : all_by_tag(doc_.root(), QStringLiteral("script"))) {
-        if (attr(script, QStringLiteral("type")) != QStringLiteral("application/ld+json"))
+    for (Node* script : all_by_tag(doc_.root(), "script")) {
+        if (attr(script, "type") != "application/ld+json")
             continue;
         QString content = text_of(script);
-        content.remove(QRegularExpression(QStringLiteral("^\\s*<!\\[CDATA\\[|\\]\\]>\\s*$")));
+        content.remove(QRegularExpression("^\\s*<!\\[CDATA\\[|\\]\\]>\\s*$"));
         QJsonParseError err;
         QJsonDocument   doc = QJsonDocument::fromJson(content.toUtf8(), &err);
         if (err.error != QJsonParseError::NoError) continue;
@@ -667,16 +664,16 @@ QJsonObject Readability::get_json_ld() {
             for (const QJsonValue& v : doc.array()) {
                 if (!v.isObject()) continue;
                 QJsonObject o  = v.toObject();
-                QString     ty = o.value(QStringLiteral("@type")).toString();
+                QString     ty = o.value("@type").toString();
                 if (QRegularExpression(
-                        QStringLiteral("^Article|AdvertiserContentArticle|NewsArticle|"
+                        "^Article|AdvertiserContentArticle|NewsArticle|"
                                        "AnalysisNewsArticle|AskPublicNewsArticle|"
                                        "BackgroundNewsArticle|OpinionNewsArticle|"
                                        "ReportageNewsArticle|ReviewNewsArticle|"
                                        "SatiricalArticle|ScholarlyArticle|"
                                        "MedicalScholarlyArticle|SocialMediaPosting|"
                                        "BlogPosting|LiveBlogPosting|"
-                                       "DiscussionForumPosting|TechArticle|APIReference$"))
+                                       "DiscussionForumPosting|TechArticle|APIReference$")
                         .match(ty)
                         .hasMatch()) {
                     parsed = o;
@@ -688,37 +685,37 @@ QJsonObject Readability::get_json_ld() {
             parsed = doc.object();
         }
 
-        const QJsonValue ctx = parsed.value(QStringLiteral("@context"));
+        const QJsonValue ctx = parsed.value("@context");
         const QRegularExpression schema_re(
-            QStringLiteral("^https?\\://schema\\.org/?$"));
+            "^https?\\://schema\\.org/?$");
         bool ctx_ok = false;
         if (ctx.isString()) {
             ctx_ok = schema_re.match(ctx.toString()).hasMatch();
         } else if (ctx.isObject()) {
-            const QJsonValue vocab = ctx.toObject().value(QStringLiteral("@vocab"));
+            const QJsonValue vocab = ctx.toObject().value("@vocab");
             ctx_ok = vocab.isString() && schema_re.match(vocab.toString()).hasMatch();
         }
         if (!ctx_ok) continue;
 
-        if (!parsed.contains(QStringLiteral("@type")) &&
-            parsed.value(QStringLiteral("@graph")).isArray()) {
-            for (const QJsonValue& v : parsed.value(QStringLiteral("@graph")).toArray()) {
+        if (!parsed.contains("@type") &&
+            parsed.value("@graph").isArray()) {
+            for (const QJsonValue& v : parsed.value("@graph").toArray()) {
                 if (!v.isObject()) continue;
                 QJsonObject o = v.toObject();
-                if (QRegularExpression(QStringLiteral("Article|NewsArticle|BlogPosting|"
-                                                      "TechArticle|Report"))
-                        .match(o.value(QStringLiteral("@type")).toString())
+                if (QRegularExpression("Article|NewsArticle|BlogPosting|"
+                                                      "TechArticle|Report")
+                        .match(o.value("@type").toString())
                         .hasMatch()) {
                     parsed = o;
                     break;
                 }
             }
         }
-        const QString type = parsed.value(QStringLiteral("@type")).toString();
+        const QString type = parsed.value("@type").toString();
         if (type.isEmpty() ||
-            !QRegularExpression(QStringLiteral("Article|NewsArticle|BlogPosting|"
+            !QRegularExpression("Article|NewsArticle|BlogPosting|"
                                                "TechArticle|Report|SocialMediaPosting|"
-                                               "DiscussionForumPosting"))
+                                               "DiscussionForumPosting")
                  .match(type)
                  .hasMatch())
             continue;
@@ -730,31 +727,31 @@ QJsonObject Readability::get_json_ld() {
 void Readability::get_article_metadata(const QJsonObject& jsonld) {
     QHash<QString, QString> values;
     const QRegularExpression property_re(
-        QStringLiteral("\\s*(article|dc|dcterm|og|twitter)\\s*:\\s*"
-                       "(author|creator|description|published_time|title|site_name)\\s*"),
+        "\\s*(article|dc|dcterm|og|twitter)\\s*:\\s*"
+                       "(author|creator|description|published_time|title|site_name)\\s*",
         QRegularExpression::CaseInsensitiveOption);
     const QRegularExpression name_re(
-        QStringLiteral("^\\s*(?:(dc|dcterm|og|twitter|parsely|weibo:(article|webpage))"
-                       "\\s*[-.:]\\s*)?(author|creator|pub-date|description|title|site_name)\\s*$"),
+        "^\\s*(?:(dc|dcterm|og|twitter|parsely|weibo:(article|webpage))"
+                       "\\s*[-.:]\\s*)?(author|creator|pub-date|description|title|site_name)\\s*$",
         QRegularExpression::CaseInsensitiveOption);
 
-    for (Node* meta : all_by_tag(doc_.root(), QStringLiteral("meta"))) {
-        const QString content = attr(meta, QStringLiteral("content")).trimmed();
+    for (Node* meta : all_by_tag(doc_.root(), "meta")) {
+        const QString content = attr(meta, "content").trimmed();
         if (content.isEmpty()) continue;
         bool matched = false;
-        if (QString property = attr(meta, QStringLiteral("property")); !property.isEmpty()) {
+        if (QString property = attr(meta, "property"); !property.isEmpty()) {
             auto m = property_re.match(property);
             if (m.hasMatch()) {
                 QString name = m.captured(0).toLower();
-                name.remove(QRegularExpression(QStringLiteral("\\s")));
+                name.remove(QRegularExpression("\\s"));
                 values.insert(name, content);
                 matched = true;
             }
         }
-        const QString name_attr = attr(meta, QStringLiteral("name"));
+        const QString name_attr = attr(meta, "name");
         if (!matched && !name_attr.isEmpty() && name_re.match(name_attr).hasMatch()) {
             QString name = name_attr.toLower();
-            name.remove(QRegularExpression(QStringLiteral("\\s")));
+            name.remove(QRegularExpression("\\s"));
             name.replace(QLatin1Char('.'), QLatin1Char(':'));
             values.insert(name, content);
         }
@@ -766,55 +763,55 @@ void Readability::get_article_metadata(const QJsonObject& jsonld) {
         return QString();
     };
 
-    QString title = jsonld.value(QStringLiteral("name")).toString();
-    if (title.isEmpty()) title = jsonld.value(QStringLiteral("headline")).toString();
+    QString title = jsonld.value("name").toString();
+    if (title.isEmpty()) title = jsonld.value("headline").toString();
     if (title.isEmpty())
-        title = pick({QStringLiteral("dc:title"), QStringLiteral("dcterm:title"),
-                      QStringLiteral("og:title"), QStringLiteral("weibo:article:title"),
-                      QStringLiteral("weibo:webpage:title"), QStringLiteral("title"),
-                      QStringLiteral("twitter:title"), QStringLiteral("parsely-title")});
+        title = pick({"dc:title", "dcterm:title",
+                      "og:title", "weibo:article:title",
+                      "weibo:webpage:title", "title",
+                      "twitter:title", "parsely-title"});
     if (title.isEmpty()) title = get_article_title();
     article_title_ = title;
 
-    QString byline = jsonld.value(QStringLiteral("author")).toObject()
-                         .value(QStringLiteral("name")).toString();
+    QString byline = jsonld.value("author").toObject()
+                         .value("name").toString();
     if (byline.isEmpty()) {
-        const QJsonValue authors = jsonld.value(QStringLiteral("author"));
+        const QJsonValue authors = jsonld.value("author");
         if (authors.isArray()) {
             QStringList names;
             for (const QJsonValue& v : authors.toArray()) {
-                const QString n = v.toObject().value(QStringLiteral("name")).toString().trimmed();
+                const QString n = v.toObject().value("name").toString().trimmed();
                 if (!n.isEmpty()) names.push_back(n);
             }
-            byline = names.join(QStringLiteral(", "));
+            byline = names.join(", ");
         }
     }
     if (byline.isEmpty())
-        byline = pick({QStringLiteral("dc:creator"), QStringLiteral("dcterm:creator"),
-                       QStringLiteral("author"), QStringLiteral("parsely-author")});
+        byline = pick({"dc:creator", "dcterm:creator",
+                       "author", "parsely-author"});
     article_byline_ = byline;
 
-    QString excerpt = jsonld.value(QStringLiteral("description")).toString();
+    QString excerpt = jsonld.value("description").toString();
     if (excerpt.isEmpty())
-        excerpt = pick({QStringLiteral("dc:description"), QStringLiteral("dcterm:description"),
-                        QStringLiteral("og:description"),
-                        QStringLiteral("weibo:article:description"),
-                        QStringLiteral("weibo:webpage:description"),
-                        QStringLiteral("description"), QStringLiteral("twitter:description")});
+        excerpt = pick({"dc:description", "dcterm:description",
+                        "og:description",
+                        "weibo:article:description",
+                        "weibo:webpage:description",
+                        "description", "twitter:description"});
     // Article::excerpt is filled from the first paragraph if still empty.
 
-    QString site = jsonld.value(QStringLiteral("publisher")).toObject()
-                       .value(QStringLiteral("name")).toString();
-    if (site.isEmpty()) site = pick({QStringLiteral("og:site_name")});
+    QString site = jsonld.value("publisher").toObject()
+                       .value("name").toString();
+    if (site.isEmpty()) site = pick({"og:site_name"});
     article_site_name_ = site;
 
-    QString pub = jsonld.value(QStringLiteral("datePublished")).toString();
+    QString pub = jsonld.value("datePublished").toString();
     if (pub.isEmpty())
-        pub = pick({QStringLiteral("article:published_time"),
-                    QStringLiteral("parsely-pub-date")});
+        pub = pick({"article:published_time",
+                    "parsely-pub-date"});
     // Stored on the result after extraction.
-    if (Node* html = find(doc_.root(), QStringLiteral("html")))
-        article_lang_ = attr(html, QStringLiteral("lang"));
+    if (Node* html = find(doc_.root(), "html"))
+        article_lang_ = attr(html, "lang");
 
     // Stash excerpt/published time in reserved strings via the current object.
     // They are consumed by parse() through these members.
@@ -856,18 +853,18 @@ int Readability::get_class_weight(Node* e) {
 void Readability::initialize_node(Node* node) {
     double s = 0;
     const QString tag = tag_name(node);
-    if (tag == QStringLiteral("div")) s += 5;
-    else if (tag == QStringLiteral("pre") || tag == QStringLiteral("td") ||
-             tag == QStringLiteral("blockquote")) s += 3;
-    else if (tag == QStringLiteral("address") || tag == QStringLiteral("ol") ||
-             tag == QStringLiteral("ul") || tag == QStringLiteral("dl") ||
-             tag == QStringLiteral("dd") || tag == QStringLiteral("dt") ||
-             tag == QStringLiteral("li") || tag == QStringLiteral("form"))
+    if (tag == "div") s += 5;
+    else if (tag == "pre" || tag == "td" ||
+             tag == "blockquote") s += 3;
+    else if (tag == "address" || tag == "ol" ||
+             tag == "ul" || tag == "dl" ||
+             tag == "dd" || tag == "dt" ||
+             tag == "li" || tag == "form")
         s -= 3;
-    else if (tag == QStringLiteral("h1") || tag == QStringLiteral("h2") ||
-             tag == QStringLiteral("h3") || tag == QStringLiteral("h4") ||
-             tag == QStringLiteral("h5") || tag == QStringLiteral("h6") ||
-             tag == QStringLiteral("th"))
+    else if (tag == "h1" || tag == "h2" ||
+             tag == "h3" || tag == "h4" ||
+             tag == "h5" || tag == "h6" ||
+             tag == "th")
         s -= 5;
     s += get_class_weight(node);
     scores_.insert(node, s);
@@ -877,8 +874,8 @@ double Readability::get_link_density(Node* element) {
     const int text_length = inner_text(element).size();
     if (text_length == 0) return 0;
     double link_length = 0;
-    for (Node* link : all_by_tag(element, QStringLiteral("a"))) {
-        const QString href = attr(link, QStringLiteral("href"));
+    for (Node* link : all_by_tag(element, "a")) {
+        const QString href = attr(link, "href");
         const double coefficient = (!href.isEmpty() && reHashUrl().match(href).hasMatch()) ? 0.3 : 1.0;
         link_length += inner_text(link).size() * coefficient;
     }
@@ -894,17 +891,17 @@ double Readability::text_similarity(const QString& a, const QString& b) const {
     QStringList   unique_b;
     for (const QString& t : tb)
         if (!set_a.contains(t)) unique_b.push_back(t);
-    const double distance = unique_b.join(QStringLiteral(" ")).size() /
-                            static_cast<double>(tb.join(QStringLiteral(" ")).size());
+    const double distance = unique_b.join(" ").size() /
+                            static_cast<double>(tb.join(" ").size());
     return 1 - distance;
 }
 
 bool Readability::is_valid_byline(Node* node, const QString& match) {
-    const QString rel     = attr(node, QStringLiteral("rel"));
-    const QString itemprop = attr(node, QStringLiteral("itemprop"));
+    const QString rel     = attr(node, "rel");
+    const QString itemprop = attr(node, "itemprop");
     const int     length  = text_of(node).trimmed().size();
-    return (rel == QStringLiteral("author") ||
-            itemprop.contains(QStringLiteral("author")) ||
+    return (rel == "author" ||
+            itemprop.contains("author") ||
             reByline().match(match).hasMatch()) &&
            length > 0 && length < 100;
 }
@@ -933,43 +930,43 @@ int Readability::get_char_count(Node* e, const QString& s) const {
 }
 
 void Readability::clean_styles(Node* e) {
-    if (!e || tag_name(e) == QStringLiteral("svg")) return;
+    if (!e || tag_name(e) == "svg") return;
     for (const QString& a : kPresentationalAttributes) remove_attr(e, a);
     if (kDeprecatedSizeElements.contains(tag_name(e))) {
-        remove_attr(e, QStringLiteral("width"));
-        remove_attr(e, QStringLiteral("height"));
+        remove_attr(e, "width");
+        remove_attr(e, "height");
     }
     for (Node* c : element_children(e)) clean_styles(c);
 }
 
 void Readability::mark_data_tables(Node* root) {
-    for (Node* table : all_by_tag(root, QStringLiteral("table"))) {
-        if (attr(table, QStringLiteral("role")) == QStringLiteral("presentation")) {
+    for (Node* table : all_by_tag(root, "table")) {
+        if (attr(table, "role") == "presentation") {
             set_data_table(table, false);
             continue;
         }
-        if (attr(table, QStringLiteral("datatable")) == QStringLiteral("0")) {
+        if (attr(table, "datatable") == "0") {
             set_data_table(table, false);
             continue;
         }
-        if (!attr(table, QStringLiteral("summary")).isEmpty()) {
+        if (!attr(table, "summary").isEmpty()) {
             set_data_table(table, true);
             continue;
         }
-        Node* caption = first_by_tag(table, QStringLiteral("caption"));
+        Node* caption = first_by_tag(table, "caption");
         if (caption && caption->first_child) {
             set_data_table(table, true);
             continue;
         }
-        if (first_by_tag(table, QStringLiteral("col")) ||
-            first_by_tag(table, QStringLiteral("colgroup")) ||
-            first_by_tag(table, QStringLiteral("tfoot")) ||
-            first_by_tag(table, QStringLiteral("thead")) ||
-            first_by_tag(table, QStringLiteral("th"))) {
+        if (first_by_tag(table, "col") ||
+            first_by_tag(table, "colgroup") ||
+            first_by_tag(table, "tfoot") ||
+            first_by_tag(table, "thead") ||
+            first_by_tag(table, "th")) {
             set_data_table(table, true);
             continue;
         }
-        if (first_by_tag(table, QStringLiteral("table"))) {
+        if (first_by_tag(table, "table")) {
             set_data_table(table, false);
             continue;
         }
@@ -989,12 +986,12 @@ void Readability::mark_data_tables(Node* root) {
 
 void Readability::get_row_and_column_count(Node* table, int& rows, int& columns) {
     rows = columns = 0;
-    for (Node* tr : all_by_tag(table, QStringLiteral("tr"))) {
-        int rowspan = attr(tr, QStringLiteral("rowspan")).toInt();
+    for (Node* tr : all_by_tag(table, "tr")) {
+        int rowspan = attr(tr, "rowspan").toInt();
         rows += rowspan > 0 ? rowspan : 1;
         int columns_in_row = 0;
-        for (Node* td : all_by_tag(tr, QStringLiteral("td"))) {
-            int colspan = attr(td, QStringLiteral("colspan")).toInt();
+        for (Node* td : all_by_tag(tr, "td")) {
+            int colspan = attr(td, "colspan").toInt();
             columns_in_row += colspan > 0 ? colspan : 1;
         }
         columns = std::max(columns, columns_in_row);
@@ -1002,11 +999,11 @@ void Readability::get_row_and_column_count(Node* table, int& rows, int& columns)
 }
 
 void Readability::fix_lazy_images(Node* root) {
-    for (Node* elem : all_by_tag(root, QStringLiteral("img"))) {
-        const QString src = attr(elem, QStringLiteral("src"));
+    for (Node* elem : all_by_tag(root, "img")) {
+        const QString src = attr(elem, "src");
         if (!src.isEmpty() && reB64DataUrl().match(src).hasMatch()) {
             auto m = reB64DataUrl().match(src);
-            if (m.captured(1) != QStringLiteral("image/svg+xml")) {
+            if (m.captured(1) != "image/svg+xml") {
                 bool could_remove = false;
                 if (is_element(elem)) {
                     auto* el = lxb_dom_interface_element(elem);
@@ -1018,8 +1015,8 @@ void Readability::fix_lazy_images(Node* root) {
                                                          static_cast<int>(nlen));
                         QString val  = QString::fromUtf8(reinterpret_cast<const char*>(v),
                                                         static_cast<int>(vlen));
-                        if (name == QStringLiteral("src")) continue;
-                        if (QRegularExpression(QStringLiteral("\\.(jpg|jpeg|png|webp)"),
+                        if (name == "src") continue;
+                        if (QRegularExpression("\\.(jpg|jpeg|png|webp)",
                                                QRegularExpression::CaseInsensitiveOption)
                                 .match(val)
                                 .hasMatch()) {
@@ -1029,14 +1026,14 @@ void Readability::fix_lazy_images(Node* root) {
                     }
                 }
                 if (could_remove && src.size() - m.captured(0).size() < 133)
-                    remove_attr(elem, QStringLiteral("src"));
+                    remove_attr(elem, "src");
             }
         }
 
-        const QString src2 = attr(elem, QStringLiteral("src"));
-        const QString srcset = attr(elem, QStringLiteral("srcset"));
-        if ((!src2.isEmpty() || (!srcset.isEmpty() && srcset != QStringLiteral("null"))) &&
-            !class_name(elem).toLower().contains(QStringLiteral("lazy")))
+        const QString src2 = attr(elem, "src");
+        const QString srcset = attr(elem, "srcset");
+        if ((!src2.isEmpty() || (!srcset.isEmpty() && srcset != "null")) &&
+            !class_name(elem).toLower().contains("lazy"))
             continue;
 
         if (!is_element(elem)) continue;
@@ -1054,29 +1051,29 @@ void Readability::fix_lazy_images(Node* root) {
         for (auto it = attrs.cbegin(); it != attrs.cend(); ++it) {
             const QString& name = it.key();
             const QString& value = it.value();
-            if (name == QStringLiteral("src") || name == QStringLiteral("srcset") ||
-                name == QStringLiteral("alt"))
+            if (name == "src" || name == "srcset" ||
+                name == "alt")
                 continue;
             QString copy_to;
-            if (QRegularExpression(QStringLiteral("\\.(jpg|jpeg|png|webp)\\s+\\d"),
+            if (QRegularExpression("\\.(jpg|jpeg|png|webp)\\s+\\d",
                                    QRegularExpression::CaseInsensitiveOption)
                     .match(value)
                     .hasMatch())
-                copy_to = QStringLiteral("srcset");
-            else if (QRegularExpression(QStringLiteral("^\\s*\\S+\\.(jpg|jpeg|png|webp)\\S*\\s*$"),
+                copy_to = "srcset";
+            else if (QRegularExpression("^\\s*\\S+\\.(jpg|jpeg|png|webp)\\S*\\s*$",
                                         QRegularExpression::CaseInsensitiveOption)
                          .match(value)
                          .hasMatch())
-                copy_to = QStringLiteral("src");
+                copy_to = "src";
             if (copy_to.isEmpty()) continue;
             set_attr(elem, copy_to, value);
         }
     }
 
     // Figures without an image but with lazy image attributes get a child img.
-    for (Node* figure : all_by_tag(root, QStringLiteral("figure"))) {
-        if (first_by_tag(figure, QStringLiteral("img")) ||
-            first_by_tag(figure, QStringLiteral("picture")))
+    for (Node* figure : all_by_tag(root, "figure")) {
+        if (first_by_tag(figure, "img") ||
+            first_by_tag(figure, "picture"))
             continue;
     }
 }
@@ -1092,8 +1089,8 @@ double Readability::get_text_density(Node* e, const QStringList& tags) {
 }
 
 void Readability::clean(Node* e, const QString& tag) {
-    const bool is_embed = tag == QStringLiteral("object") || tag == QStringLiteral("embed") ||
-                          tag == QStringLiteral("iframe");
+    const bool is_embed = tag == "object" || tag == "embed" ||
+                          tag == "iframe";
     Nodes to_remove;
     for (Node* element : all_by_tag(e, tag)) {
         bool keep = false;
@@ -1112,10 +1109,10 @@ void Readability::clean(Node* e, const QString& tag) {
                     }
                 }
             }
-            if (!keep && tag == QStringLiteral("object")) {
+            if (!keep && tag == "object") {
                 // Serialized inner HTML is not needed for the common object case;
                 // check all descendant attributes instead.
-                for (Node* d : all_by_tag(element, QStringLiteral("*"))) (void)d;
+                for (Node* d : all_by_tag(element, "*")) (void)d;
             }
         }
         if (!keep) to_remove.push_back(element);
@@ -1132,23 +1129,23 @@ void Readability::clean_conditionally(Node* e, const QString& tag) {
     for (Node* node : all_by_tag(e, tag)) {
         if (!node->parent) continue;
 
-        bool is_list = tag == QStringLiteral("ul") || tag == QStringLiteral("ol");
+        bool is_list = tag == "ul" || tag == "ol";
         if (!is_list) {
             double list_length = 0;
-            for (Node* list : all_by_tag(node, QStringLiteral("ul")))
+            for (Node* list : all_by_tag(node, "ul"))
                 list_length += inner_text(list).size();
-            for (Node* list : all_by_tag(node, QStringLiteral("ol")))
+            for (Node* list : all_by_tag(node, "ol"))
                 list_length += inner_text(list).size();
             const int node_length = inner_text(node).size();
             is_list = node_length > 0 && list_length / node_length > 0.9;
         }
 
-        if (tag == QStringLiteral("table") && is_data_table(node)) continue;
-        if (has_ancestor_tag(node, QStringLiteral("table"), -1, is_data_table)) continue;
-        if (has_ancestor_tag(node, QStringLiteral("code"))) continue;
+        if (tag == "table" && is_data_table(node)) continue;
+        if (has_ancestor_tag(node, "table", -1, is_data_table)) continue;
+        if (has_ancestor_tag(node, "code")) continue;
 
         bool contains_data_table = false;
-        for (Node* t : all_by_tag(node, QStringLiteral("table")))
+        for (Node* t : all_by_tag(node, "table"))
             if (is_data_table(t)) contains_data_table = true;
         if (contains_data_table) continue;
 
@@ -1158,26 +1155,26 @@ void Readability::clean_conditionally(Node* e, const QString& tag) {
             continue;
         }
 
-        if (get_char_count(node, QStringLiteral(",")) >= 10) continue;
+        if (get_char_count(node, ",") >= 10) continue;
 
-        const int p     = count_by_tag(node, QStringLiteral("p"));
-        const int img   = count_by_tag(node, QStringLiteral("img"));
-        const int li    = count_by_tag(node, QStringLiteral("li")) - 100;
-        const int input = count_by_tag(node, QStringLiteral("input"));
+        const int p     = count_by_tag(node, "p");
+        const int img   = count_by_tag(node, "img");
+        const int li    = count_by_tag(node, "li") - 100;
+        const int input = count_by_tag(node, "input");
         const double heading_density =
-            get_text_density(node, {QStringLiteral("h1"), QStringLiteral("h2"),
-                                    QStringLiteral("h3"), QStringLiteral("h4"),
-                                    QStringLiteral("h5"), QStringLiteral("h6")});
+            get_text_density(node, {"h1", "h2",
+                                    "h3", "h4",
+                                    "h5", "h6"});
 
         int  embed_count = 0;
         bool keep_embed  = false;
-        for (Node* embed : all_by_tag(node, QStringLiteral("object"))) {
+        for (Node* embed : all_by_tag(node, "object")) {
             (void)embed;
         }
         Nodes embeds;
-        for (Node* x : all_by_tag(node, QStringLiteral("object"))) embeds.push_back(x);
-        for (Node* x : all_by_tag(node, QStringLiteral("embed"))) embeds.push_back(x);
-        for (Node* x : all_by_tag(node, QStringLiteral("iframe"))) embeds.push_back(x);
+        for (Node* x : all_by_tag(node, "object")) embeds.push_back(x);
+        for (Node* x : all_by_tag(node, "embed")) embeds.push_back(x);
+        for (Node* x : all_by_tag(node, "iframe")) embeds.push_back(x);
         for (Node* embed : embeds) {
             if (is_element(embed)) {
                 auto* el = lxb_dom_interface_element(embed);
@@ -1206,29 +1203,29 @@ void Readability::clean_conditionally(Node* e, const QString& tag) {
 
         const int    content_length = inner.size();
         const double link_density   = get_link_density(node);
-        QStringList textish_tags    = {QStringLiteral("span"), QStringLiteral("li"),
-                                       QStringLiteral("td")};
+        QStringList textish_tags    = {"span", "li",
+                                       "td"};
         for (const QString& t : kDivToPElems) textish_tags.push_back(t);
         const double text_density = get_text_density(node, textish_tags);
-        const bool   is_figure_child = has_ancestor_tag(node, QStringLiteral("figure"));
+        const bool   is_figure_child = has_ancestor_tag(node, "figure");
 
         QStringList errs;
         if (!is_figure_child && img > 1 && static_cast<double>(p) / img < 0.5)
-            errs.push_back(QStringLiteral("bad p/img"));
-        if (!is_list && li > p) errs.push_back(QStringLiteral("too many li"));
+            errs.push_back("bad p/img");
+        if (!is_list && li > p) errs.push_back("too many li");
         if (input > static_cast<int>(std::floor(p / 3.0)))
-            errs.push_back(QStringLiteral("too many inputs"));
+            errs.push_back("too many inputs");
         if (!is_list && !is_figure_child && heading_density < 0.9 &&
             content_length < 25 && (img == 0 || img > 2) && link_density > 0)
-            errs.push_back(QStringLiteral("suspiciously short"));
+            errs.push_back("suspiciously short");
         if (!is_list && weight < 25 && link_density > 0.2)
-            errs.push_back(QStringLiteral("low weight, linky"));
+            errs.push_back("low weight, linky");
         if (weight >= 25 && link_density > 0.5)
-            errs.push_back(QStringLiteral("high weight, mostly links"));
+            errs.push_back("high weight, mostly links");
         if ((embed_count == 1 && content_length < 75) || embed_count > 1)
-            errs.push_back(QStringLiteral("suspicious embed"));
+            errs.push_back("suspicious embed");
         if (img == 0 && text_density == 0)
-            errs.push_back(QStringLiteral("no useful content"));
+            errs.push_back("no useful content");
 
         bool remove = !errs.isEmpty();
         if (is_list && remove) {
@@ -1239,7 +1236,7 @@ void Readability::clean_conditionally(Node* e, const QString& tag) {
                 to_remove.push_back(node);
                 continue;
             }
-            if (img == count_by_tag(node, QStringLiteral("li"))) remove = false;
+            if (img == count_by_tag(node, "li")) remove = false;
         }
         if (remove) to_remove.push_back(node);
     }
@@ -1259,9 +1256,9 @@ void Readability::clean_matched_nodes(
 
 void Readability::clean_headers(Node* e) {
     Nodes to_remove;
-    for (Node* h : all_by_tag(e, QStringLiteral("h1")))
+    for (Node* h : all_by_tag(e, "h1"))
         if (get_class_weight(h) < 0) to_remove.push_back(h);
-    for (Node* h : all_by_tag(e, QStringLiteral("h2")))
+    for (Node* h : all_by_tag(e, "h2"))
         if (get_class_weight(h) < 0) to_remove.push_back(h);
     remove_nodes(std::move(to_remove));
 }
@@ -1271,13 +1268,13 @@ void Readability::prep_article(Node* article) {
     mark_data_tables(article);
     fix_lazy_images(article);
 
-    clean_conditionally(article, QStringLiteral("form"));
-    clean_conditionally(article, QStringLiteral("fieldset"));
-    clean(article, QStringLiteral("object"));
-    clean(article, QStringLiteral("embed"));
-    clean(article, QStringLiteral("footer"));
-    clean(article, QStringLiteral("link"));
-    clean(article, QStringLiteral("aside"));
+    clean_conditionally(article, "form");
+    clean_conditionally(article, "fieldset");
+    clean(article, "object");
+    clean(article, "embed");
+    clean(article, "footer");
+    clean(article, "link");
+    clean(article, "aside");
 
     const int share_threshold = kDefaultCharThreshold;
     for (Node* top : element_children(article)) {
@@ -1287,49 +1284,49 @@ void Readability::prep_article(Node* article) {
         });
     }
 
-    clean(article, QStringLiteral("iframe"));
-    clean(article, QStringLiteral("input"));
-    clean(article, QStringLiteral("textarea"));
-    clean(article, QStringLiteral("select"));
-    clean(article, QStringLiteral("button"));
+    clean(article, "iframe");
+    clean(article, "input");
+    clean(article, "textarea");
+    clean(article, "select");
+    clean(article, "button");
     clean_headers(article);
 
-    clean_conditionally(article, QStringLiteral("table"));
-    clean_conditionally(article, QStringLiteral("ul"));
-    clean_conditionally(article, QStringLiteral("div"));
+    clean_conditionally(article, "table");
+    clean_conditionally(article, "ul");
+    clean_conditionally(article, "div");
 
-    for (Node* h1 : all_by_tag(article, QStringLiteral("h1")))
-        set_node_tag(h1, QStringLiteral("h2"));
+    for (Node* h1 : all_by_tag(article, "h1"))
+        set_node_tag(h1, "h2");
 
     Nodes empty_paragraphs;
-    for (Node* p : all_by_tag(article, QStringLiteral("p"))) {
-        int content_count = count_by_tag(p, QStringLiteral("img")) +
-                            count_by_tag(p, QStringLiteral("embed")) +
-                            count_by_tag(p, QStringLiteral("object")) +
-                            count_by_tag(p, QStringLiteral("iframe"));
+    for (Node* p : all_by_tag(article, "p")) {
+        int content_count = count_by_tag(p, "img") +
+                            count_by_tag(p, "embed") +
+                            count_by_tag(p, "object") +
+                            count_by_tag(p, "iframe");
         if (content_count == 0 && inner_text(p, false).isEmpty())
             empty_paragraphs.push_back(p);
     }
     remove_nodes(std::move(empty_paragraphs));
 
-    for (Node* br : all_by_tag(article, QStringLiteral("br"))) {
+    for (Node* br : all_by_tag(article, "br")) {
         Node* next = next_node(br->next, false);
         if (next && has_tag(next, "p")) remove_node(br);
     }
 
-    for (Node* table : all_by_tag(article, QStringLiteral("table"))) {
+    for (Node* table : all_by_tag(article, "table")) {
         if (!table->parent) continue;
-        Node* tbody = has_single_tag_inside(table, QStringLiteral("tbody"))
+        Node* tbody = has_single_tag_inside(table, "tbody")
                           ? element_children(table).front()
                           : table;
-        if (!has_single_tag_inside(tbody, QStringLiteral("tr"))) continue;
+        if (!has_single_tag_inside(tbody, "tr")) continue;
         Node* row = element_children(tbody).front();
-        if (!has_single_tag_inside(row, QStringLiteral("td"))) continue;
+        if (!has_single_tag_inside(row, "td")) continue;
         Node* cell = element_children(row).front();
         bool  all_phrasing = true;
         for (Node* c = cell->first_child; c; c = c->next)
             if (!is_phrasing_content(c)) all_phrasing = false;
-        cell = set_node_tag(cell, all_phrasing ? QStringLiteral("p") : QStringLiteral("div"));
+        cell = set_node_tag(cell, all_phrasing ? "p" : "div");
         Node* parent = table->parent;
         move_before(table, cell);
         remove_node(table);
@@ -1340,7 +1337,7 @@ void Readability::prep_article(Node* article) {
 void Readability::unwrap_noscript_images() {
     // Remove placeholder images that carry no useful source attribute.
     Nodes bad_images;
-    for (Node* img : all_by_tag(doc_.root(), QStringLiteral("img"))) {
+    for (Node* img : all_by_tag(doc_.root(), "img")) {
         bool useful = false;
         if (is_element(img)) {
             auto* el = lxb_dom_interface_element(img);
@@ -1352,12 +1349,12 @@ void Readability::unwrap_noscript_images() {
                                                        static_cast<int>(nlen));
                 const QString value = QString::fromUtf8(reinterpret_cast<const char*>(v),
                                                         static_cast<int>(vlen));
-                if (name == QStringLiteral("src") || name == QStringLiteral("srcset") ||
-                    name == QStringLiteral("data-src") || name == QStringLiteral("data-srcset")) {
+                if (name == "src" || name == "srcset" ||
+                    name == "data-src" || name == "data-srcset") {
                     useful = true;
                     break;
                 }
-                if (QRegularExpression(QStringLiteral("\\.(jpg|jpeg|png|webp)"),
+                if (QRegularExpression("\\.(jpg|jpeg|png|webp)",
                                        QRegularExpression::CaseInsensitiveOption)
                         .match(value)
                         .hasMatch()) {
@@ -1373,31 +1370,31 @@ void Readability::unwrap_noscript_images() {
 
 void Readability::remove_scripts() {
     Nodes to_remove;
-    for (Node* n : all_by_tag(doc_.root(), QStringLiteral("script"))) to_remove.push_back(n);
-    for (Node* n : all_by_tag(doc_.root(), QStringLiteral("noscript"))) to_remove.push_back(n);
+    for (Node* n : all_by_tag(doc_.root(), "script")) to_remove.push_back(n);
+    for (Node* n : all_by_tag(doc_.root(), "noscript")) to_remove.push_back(n);
     remove_nodes(std::move(to_remove));
 }
 
 Node* Readability::grab_article() {
-    Node* page = find(doc_.root(), QStringLiteral("body"));
+    Node* page = find(doc_.root(), "body");
     if (!page) return nullptr;
 
     while (true) {
         const bool strip_unlikely = flag_active(kFlagStripUnlikelys);
         Nodes      elements_to_score;
-        Node*      node = find(doc_.root(), QStringLiteral("html"));
+        Node*      node = find(doc_.root(), "html");
         bool       should_remove_title_header = true;
 
         while (node) {
-            if (has_tag(node, "html")) article_lang_ = attr(node, QStringLiteral("lang"));
+            if (has_tag(node, "html")) article_lang_ = attr(node, "lang");
             const QString match = match_string(node);
 
             if (!is_probably_visible(node)) {
                 node = remove_and_get_next(node);
                 continue;
             }
-            if (attr(node, QStringLiteral("aria-modal")) == QStringLiteral("true") &&
-                attr(node, QStringLiteral("role")) == QStringLiteral("dialog")) {
+            if (attr(node, "aria-modal") == "true" &&
+                attr(node, "role") == "dialog") {
                 node = remove_and_get_next(node);
                 continue;
             }
@@ -1407,8 +1404,8 @@ Node* Readability::grab_article() {
                 Node* next       = next_node(node);
                 Node* name_node  = nullptr;
                 while (next && next != end_marker) {
-                    const QString itemprop = attr(next, QStringLiteral("itemprop"));
-                    if (itemprop.contains(QStringLiteral("name"))) {
+                    const QString itemprop = attr(next, "itemprop");
+                    if (itemprop.contains("name")) {
                         name_node = next;
                         break;
                     }
@@ -1428,13 +1425,13 @@ Node* Readability::grab_article() {
             if (strip_unlikely) {
                 if (reUnlikely().match(match).hasMatch() &&
                     !reMaybeCandidate().match(match).hasMatch() &&
-                    !has_ancestor_tag(node, QStringLiteral("table")) &&
-                    !has_ancestor_tag(node, QStringLiteral("code")) &&
+                    !has_ancestor_tag(node, "table") &&
+                    !has_ancestor_tag(node, "code") &&
                     !has_tag(node, "body") && !has_tag(node, "a")) {
                     node = remove_and_get_next(node);
                     continue;
                 }
-                if (kUnlikelyRoles.contains(attr(node, QStringLiteral("role")))) {
+                if (kUnlikelyRoles.contains(attr(node, "role"))) {
                     node = remove_and_get_next(node);
                     continue;
                 }
@@ -1485,7 +1482,7 @@ Node* Readability::grab_article() {
                     child = next_sibling;
                 }
 
-                if (has_single_tag_inside(node, QStringLiteral("p")) &&
+                if (has_single_tag_inside(node, "p") &&
                     get_link_density(node) < 0.25) {
                     Node* new_node = element_children(node).front();
                     move_before(node, new_node);
@@ -1493,7 +1490,7 @@ Node* Readability::grab_article() {
                     node = new_node;
                     elements_to_score.push_back(node);
                 } else if (!has_child_block_element(node)) {
-                    node = set_node_tag(node, QStringLiteral("p"));
+                    node = set_node_tag(node, "p");
                     elements_to_score.push_back(node);
                 }
             }
@@ -1638,14 +1635,14 @@ Node* Readability::grab_article() {
                     const int length = content.size();
                     if (length > 80 && link_density < 0.25) append = true;
                     else if (length < 80 && length > 0 && link_density == 0 &&
-                             content.contains(QRegularExpression(QStringLiteral("\\.( |$)"))))
+                             content.contains(QRegularExpression("\\.( |$)")))
                         append = true;
                 }
             }
 
             if (append) {
                 if (!kAlterToDivExceptions.contains(tag_name(sibling)))
-                    sibling = set_node_tag(sibling, QStringLiteral("div"));
+                    sibling = set_node_tag(sibling, "div");
                 move_child(article_content, sibling);
                 if (sibling == top) top = sibling;
                 siblings.erase(siblings.begin() + static_cast<long>(s));
@@ -1657,16 +1654,16 @@ Node* Readability::grab_article() {
         prep_article(article_content);
 
         if (needed_to_create) {
-            set_attr(top, QStringLiteral("id"), QStringLiteral("readability-page-1"));
-            set_attr(top, QStringLiteral("class"), QStringLiteral("page"));
+            set_attr(top, "id", "readability-page-1");
+            set_attr(top, "class", "page");
         } else {
             const QByteArray dname = QByteArrayLiteral("div");
             auto* del = lxb_html_document_create_element(
                 doc_.raw(), reinterpret_cast<const lxb_char_t*>(dname.constData()),
                 static_cast<size_t>(dname.size()), nullptr);
             Node* div = lxb_dom_interface_node(del);
-            set_attr(div, QStringLiteral("id"), QStringLiteral("readability-page-1"));
-            set_attr(div, QStringLiteral("class"), QStringLiteral("page"));
+            set_attr(div, "id", "readability-page-1");
+            set_attr(div, "class", "page");
             while (article_content->first_child)
                 move_child(div, article_content->first_child);
             lxb_dom_node_insert_child(article_content, div);
@@ -1677,7 +1674,7 @@ Node* Readability::grab_article() {
         if (parent_of_top) ancestors.insert(ancestors.begin(), parent_of_top);
         for (Node* ancestor : ancestors) {
             if (!is_element(ancestor)) continue;
-            const QString dir = attr(ancestor, QStringLiteral("dir"));
+            const QString dir = attr(ancestor, "dir");
             if (!dir.isEmpty()) {
                 article_dir_ = dir;
                 break;
@@ -1697,10 +1694,10 @@ void Readability::fix_relative_uris(Node* content) {
         return resolved.isValid() ? resolved.toString() : uri;
     };
 
-    for (Node* link : all_by_tag(content, QStringLiteral("a"))) {
-        const QString href = attr(link, QStringLiteral("href"));
+    for (Node* link : all_by_tag(content, "a")) {
+        const QString href = attr(link, "href");
         if (href.isEmpty()) continue;
-        if (href.startsWith(QStringLiteral("javascript:"), Qt::CaseInsensitive)) {
+        if (href.startsWith("javascript:", Qt::CaseInsensitive)) {
             Nodes kids = child_nodes(link);
             if (kids.size() == 1 && kids.front()->type == LXB_DOM_NODE_TYPE_TEXT) {
                 const QByteArray data = text_of(link).toUtf8();
@@ -1721,20 +1718,20 @@ void Readability::fix_relative_uris(Node* content) {
                 remove_node(link);
             }
         } else {
-            set_attr(link, QStringLiteral("href"), to_absolute(href));
+            set_attr(link, "href", to_absolute(href));
         }
     }
 
-    for (const QString& tag : {QStringLiteral("img"), QStringLiteral("picture"),
-                               QStringLiteral("figure"), QStringLiteral("video"),
-                               QStringLiteral("audio"), QStringLiteral("source")}) {
+    for (const QString& tag : {"img", "picture",
+                               "figure", "video",
+                               "audio", "source"}) {
         for (Node* media : all_by_tag(content, tag)) {
-            const QString src = attr(media, QStringLiteral("src"));
-            if (!src.isEmpty()) set_attr(media, QStringLiteral("src"), to_absolute(src));
-            const QString poster = attr(media, QStringLiteral("poster"));
+            const QString src = attr(media, "src");
+            if (!src.isEmpty()) set_attr(media, "src", to_absolute(src));
+            const QString poster = attr(media, "poster");
             if (!poster.isEmpty())
-                set_attr(media, QStringLiteral("poster"), to_absolute(poster));
-            const QString srcset = attr(media, QStringLiteral("srcset"));
+                set_attr(media, "poster", to_absolute(poster));
+            const QString srcset = attr(media, "srcset");
             if (!srcset.isEmpty()) {
                 QString out;
                 auto it = reSrcsetUrl().globalMatch(srcset);
@@ -1748,7 +1745,7 @@ void Readability::fix_relative_uris(Node* content) {
                     last = m.capturedEnd();
                 }
                 out += srcset.mid(last);
-                set_attr(media, QStringLiteral("srcset"), out);
+                set_attr(media, "srcset", out);
             }
         }
     }
@@ -1759,14 +1756,14 @@ void Readability::simplify_nested_elements(Node* content) {
     while (node) {
         const QString tag = tag_name(node);
         const QString id  = node_id(node);
-        if (node->parent && (tag == QStringLiteral("div") || tag == QStringLiteral("section")) &&
-            !id.startsWith(QStringLiteral("readability"))) {
+        if (node->parent && (tag == "div" || tag == "section") &&
+            !id.startsWith("readability")) {
             if (is_element_without_content(node)) {
                 node = remove_and_get_next(node);
                 continue;
             }
-            if (has_single_tag_inside(node, QStringLiteral("div")) ||
-                has_single_tag_inside(node, QStringLiteral("section"))) {
+            if (has_single_tag_inside(node, "div") ||
+                has_single_tag_inside(node, "section")) {
                 Node* child = element_children(node).front();
                 copy_attributes(node, child);
                 move_before(node, child);
@@ -1781,11 +1778,11 @@ void Readability::simplify_nested_elements(Node* content) {
 
 void Readability::clean_classes(Node* node) {
     QStringList keep;
-    for (const QString& cls : class_name(node).split(QRegularExpression(QStringLiteral("\\s+")),
+    for (const QString& cls : class_name(node).split(QRegularExpression("\\s+"),
                                                      Qt::SkipEmptyParts))
         if (kClassesToPreserve.contains(cls)) keep.push_back(cls);
-    if (keep.isEmpty()) remove_attr(node, QStringLiteral("class"));
-    else set_attr(node, QStringLiteral("class"), keep.join(QLatin1Char(' ')));
+    if (keep.isEmpty()) remove_attr(node, "class");
+    else set_attr(node, "class", keep.join(QLatin1Char(' ')));
     for (Node* child : element_children(node)) clean_classes(child);
 }
 

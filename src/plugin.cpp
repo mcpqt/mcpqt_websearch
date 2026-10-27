@@ -22,7 +22,7 @@ namespace mcp
       {
         const QString signature
             = QString::fromLatin1(method.typeName()) + QLatin1Char(' ')
-              + class_name + QStringLiteral("::")
+              + class_name + "::"
               + QString::fromLatin1(method.methodSignature());
         m_host.regFunc(signature);
       }

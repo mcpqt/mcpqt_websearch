@@ -41,24 +41,23 @@ void collect_text(const Node* node, QString& out) {
 }
 
 QString to_well_formed_xml(QString document) {
-    document.replace(QStringLiteral("&nbsp;"), QStringLiteral("&#160;"),
+    document.replace("&nbsp;", "&#160;",
                      Qt::CaseInsensitive);
 
     static const QStringList kVoidElements = {
-        QStringLiteral("link"),   QStringLiteral("meta"), QStringLiteral("input"),
-        QStringLiteral("img"),    QStringLiteral("br"),   QStringLiteral("hr"),
-        QStringLiteral("source"), QStringLiteral("wbr"),  QStringLiteral("area"),
-        QStringLiteral("base"),   QStringLiteral("col"),  QStringLiteral("embed"),
-        QStringLiteral("param"),  QStringLiteral("track")};
+        "link",   "meta", "input",
+        "img",    "br",   "hr",
+        "source", "wbr",  "area",
+        "base",   "col",  "embed",
+        "param",  "track"};
 
     static const QRegularExpression tag_re(
-        QStringLiteral(R"(<!--.*?-->|<(?:[^>"']|"[^"]*"|'[^']*')*>)"),
+        R"(<!--.*?-->|<(?:[^>"']|"[^"]*"|'[^']*')*>)",
         QRegularExpression::DotMatchesEverythingOption);
     static const QRegularExpression name_re(
-        QStringLiteral(R"(^<\s*([A-Za-z][A-Za-z0-9:-]*))"));
+        R"(^<\s*([A-Za-z][A-Za-z0-9:-]*))");
     static const QRegularExpression attr_re(
-        QStringLiteral(
-            R"(([A-Za-z_:][A-Za-z0-9_:.-]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?)"));
+        R"(([A-Za-z_:][A-Za-z0-9_:.-]*)(?:\s*=\s*("[^"]*"|'[^']*'|[^\s"'>]+))?)");
 
     QString out;
     out.reserve(document.size());
@@ -69,10 +68,10 @@ QString to_well_formed_xml(QString document) {
         out += document.mid(last, match.capturedStart() - last);
 
         const QString tag = match.captured();
-        if (tag.startsWith(QStringLiteral("</")) ||
-            tag.startsWith(QStringLiteral("<!DOCTYPE")) ||
-            tag.startsWith(QStringLiteral("<!--")) ||
-            tag.startsWith(QStringLiteral("<?"))) {
+        if (tag.startsWith("</") ||
+            tag.startsWith("<!DOCTYPE") ||
+            tag.startsWith("<!--") ||
+            tag.startsWith("<?")) {
             out += tag;
             last = match.capturedEnd();
             continue;
@@ -106,7 +105,7 @@ QString to_well_formed_xml(QString document) {
         }
 
         const bool is_void = kVoidElements.contains(name, Qt::CaseInsensitive);
-        rebuilt += (self_close || is_void) ? QStringLiteral("/>") : QStringLiteral(">");
+        rebuilt += (self_close || is_void) ? "/>" : ">";
         out += rebuilt;
         last = match.capturedEnd();
     }
@@ -120,7 +119,7 @@ std::unique_ptr<Node> parse(const QString& html) {
     const QString     document = to_well_formed_xml(html);
     QXmlStreamReader reader(document);
     auto             root = std::make_unique<Node>();
-    root->tag             = QStringLiteral("#document");
+    root->tag             = "#document";
     Node* current         = root.get();
 
     while (!reader.atEnd()) {
@@ -134,14 +133,14 @@ std::unique_ptr<Node> parse(const QString& html) {
                 node->attrs.insert(lower(a.name().toString()), a.value().toString());
             Node* raw = node.get();
             raw->children.clear();
-            raw->attrs.insert(QStringLiteral("__parent__"),
+            raw->attrs.insert("__parent__",
                               QString::number(reinterpret_cast<quintptr>(current)));
             current->children.push_back(std::move(node));
             current = raw;
         } else if (reader.isEndElement()) {
             const quintptr parent =
-                current->attrs.value(QStringLiteral("__parent__")).toULongLong();
-            current->attrs.remove(QStringLiteral("__parent__"));
+                current->attrs.value("__parent__").toULongLong();
+            current->attrs.remove("__parent__");
             current = reinterpret_cast<Node*>(parent);
             if (!current) break;
         } else if (reader.isCharacters() || reader.isCDATA()) {
@@ -164,7 +163,7 @@ QString attr(const Node* node, const QString& name) {
 
 bool has_class(const Node* node, const QString& name) {
     if (!node) return false;
-    const QString classes = node->attrs.value(QStringLiteral("class"));
+    const QString classes = node->attrs.value("class");
     for (const QString& token : classes.split(QChar::Space, Qt::SkipEmptyParts)) {
         if (token == name) return true;
     }

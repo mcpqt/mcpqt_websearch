@@ -20,25 +20,25 @@ namespace ddg::html {
 namespace {
 
 const QStringList kBlockTags = {
-    QStringLiteral("address"), QStringLiteral("article"), QStringLiteral("aside"),
-    QStringLiteral("blockquote"), QStringLiteral("dd"), QStringLiteral("details"),
-    QStringLiteral("div"), QStringLiteral("dl"), QStringLiteral("dt"),
-    QStringLiteral("fieldset"), QStringLiteral("figcaption"), QStringLiteral("figure"),
-    QStringLiteral("footer"), QStringLiteral("form"), QStringLiteral("h1"),
-    QStringLiteral("h2"), QStringLiteral("h3"), QStringLiteral("h4"),
-    QStringLiteral("h5"), QStringLiteral("h6"), QStringLiteral("header"),
-    QStringLiteral("hr"), QStringLiteral("li"), QStringLiteral("main"),
-    QStringLiteral("nav"), QStringLiteral("ol"), QStringLiteral("p"),
-    QStringLiteral("pre"), QStringLiteral("section"), QStringLiteral("summary"),
-    QStringLiteral("table"), QStringLiteral("tbody"), QStringLiteral("td"),
-    QStringLiteral("tfoot"), QStringLiteral("th"), QStringLiteral("thead"),
-    QStringLiteral("tr"), QStringLiteral("ul")};
+    "address", "article", "aside",
+    "blockquote", "dd", "details",
+    "div", "dl", "dt",
+    "fieldset", "figcaption", "figure",
+    "footer", "form", "h1",
+    "h2", "h3", "h4",
+    "h5", "h6", "header",
+    "hr", "li", "main",
+    "nav", "ol", "p",
+    "pre", "section", "summary",
+    "table", "tbody", "td",
+    "tfoot", "th", "thead",
+    "tr", "ul"};
 
 bool is_block_tag(const QString& tag) { return kBlockTags.contains(tag); }
 
-const QStringList kTextChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
-                                     QStringLiteral("nav"), QStringLiteral("header"),
-                                     QStringLiteral("footer")};
+const QStringList kTextChromeTags = {"script", "style",
+                                     "nav", "header",
+                                     "footer"};
 
 void strip_chrome(lxb_dom_node_t* root, const QStringList& tags) {
     std::vector<lxb_dom_node_t*> to_remove;
@@ -60,10 +60,10 @@ QString safe_markdown_href(const QString& href) {
     for (QChar ch : cleaned) {
         if (ch.isSpace()) return QString();
     }
-    const qsizetype colon = cleaned.indexOf(QStringLiteral("://"));
+    const qsizetype colon = cleaned.indexOf("://");
     if (colon == -1) return QString();
     const QString scheme = cleaned.left(colon).toLower();
-    if (scheme != QStringLiteral("http") && scheme != QStringLiteral("https"))
+    if (scheme != "http" && scheme != "https")
         return QString();
     // A netloc is required (chars between "://" and the next '/').
     if (colon + 3 >= cleaned.size()) return QString();
@@ -72,7 +72,7 @@ QString safe_markdown_href(const QString& href) {
     QString out;
     for (QChar ch : cleaned) {
         if (ch == QLatin1Char(')'))
-            out += QStringLiteral("%29");
+            out += "%29";
         else
             out += ch;
     }
@@ -95,27 +95,27 @@ QString inline_markdown(lxb_dom_node_t* el);
 QString inline_markdown(lxb_dom_node_t* el) {
     if (is_text(el)) {
         return get_text(el, QString(), false)
-            .replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
+            .replace(QRegularExpression("\\s+"), " ");
     }
     const QString name = tag_name(el);
-    if (name == QStringLiteral("br")) return QStringLiteral("\n");
-    if (name == QStringLiteral("a")) {
-        const QString href  = safe_markdown_href(attr(el, QStringLiteral("href")));
-        const QString label = safe_markdown_label(get_text(el, QStringLiteral(" "), true));
+    if (name == "br") return "\n";
+    if (name == "a") {
+        const QString href  = safe_markdown_href(attr(el, "href"));
+        const QString label = safe_markdown_label(get_text(el, " ", true));
         if (!href.isEmpty() && !label.isEmpty())
-            return QStringLiteral("[") + label + QStringLiteral("](") + href +
-                   QStringLiteral(")");
+            return "[" + label + "](" + href +
+                   ")";
         return label;
     }
-    if (name == QStringLiteral("code"))
-        return QStringLiteral("`") + get_text(el, QString(), false) + QStringLiteral("`");
-    if (name == QStringLiteral("strong") || name == QStringLiteral("b")) {
-        const QString inner = get_text(el, QStringLiteral(" "), true);
-        return inner.isEmpty() ? QString() : QStringLiteral("**") + inner + QStringLiteral("**");
+    if (name == "code")
+        return "`" + get_text(el, QString(), false) + "`";
+    if (name == "strong" || name == "b") {
+        const QString inner = get_text(el, " ", true);
+        return inner.isEmpty() ? QString() : "**" + inner + "**";
     }
-    if (name == QStringLiteral("em") || name == QStringLiteral("i")) {
-        const QString inner = get_text(el, QStringLiteral(" "), true);
-        return inner.isEmpty() ? QString() : QStringLiteral("*") + inner + QStringLiteral("*");
+    if (name == "em" || name == "i") {
+        const QString inner = get_text(el, " ", true);
+        return inner.isEmpty() ? QString() : "*" + inner + "*";
     }
     QString out;
     for (lxb_dom_node_t* child = el->first_child; child; child = child->next) {
@@ -135,40 +135,40 @@ void render_markdown(lxb_dom_node_t* el, QStringList& parts) {
         name.at(1) >= QLatin1Char('1') && name.at(1) <= QLatin1Char('6')) {
         const QChar level = name.at(1);
         parts.push_back(QString(level.digitValue(), QLatin1Char('#')) + QLatin1Char(' ') +
-                        get_text(el, QStringLiteral(" "), true));
+                        get_text(el, " ", true));
         parts.push_back(QString());
-    } else if (name == QStringLiteral("p")) {
+    } else if (name == "p") {
         const QString text = inline_markdown(el).trimmed();
         if (!text.isEmpty()) {
             parts.push_back(text);
             parts.push_back(QString());
         }
-    } else if (name == QStringLiteral("pre")) {
+    } else if (name == "pre") {
         QString code = get_text(el, QString(), false);
         if (!code.isEmpty() && code.endsWith(QLatin1Char('\n'))) code.chop(1);
-        parts.push_back(QStringLiteral("```"));
+        parts.push_back("```");
         parts.push_back(code);
-        parts.push_back(QStringLiteral("```"));
+        parts.push_back("```");
         parts.push_back(QString());
-    } else if (name == QStringLiteral("ul") || name == QStringLiteral("ol")) {
+    } else if (name == "ul" || name == "ol") {
         int i = 1;
-        for (auto* li : find_all(el, QStringLiteral("li"), false)) {
-            const QString bullet = (name == QStringLiteral("ol"))
+        for (auto* li : find_all(el, "li", false)) {
+            const QString bullet = (name == "ol")
                                        ? QString::number(i) + QLatin1Char('.')
-                                       : QStringLiteral("-");
+                                       : "-";
             parts.push_back(bullet + QLatin1Char(' ') +
-                            get_text(li, QStringLiteral(" "), true));
+                            get_text(li, " ", true));
             ++i;
         }
         parts.push_back(QString());
-    } else if (name == QStringLiteral("blockquote")) {
-        const QString quote = get_text(el, QStringLiteral(" "), true);
+    } else if (name == "blockquote") {
+        const QString quote = get_text(el, " ", true);
         if (!quote.isEmpty()) {
-            parts.push_back(QStringLiteral("> ") + quote);
+            parts.push_back("> " + quote);
             parts.push_back(QString());
         }
-    } else if (name == QStringLiteral("hr")) {
-        parts.push_back(QStringLiteral("---"));
+    } else if (name == "hr") {
+        parts.push_back("---");
         parts.push_back(QString());
     } else {
         bool previous_was_element = false;
@@ -203,8 +203,8 @@ QString render_plain_text(lxb_dom_node_t* root) {
         for (lxb_dom_node_t* child = node->first_child; child; child = child->next) {
             if (is_text(child)) {
                 QString text = get_text(child, QString(), false);
-                text.replace(QRegularExpression(QStringLiteral("[ \t\r\n]+")),
-                             QStringLiteral(" "));
+                text.replace(QRegularExpression("[ \t\r\n]+"),
+                             " ");
                 if (!text.isEmpty()) {
                     if (!text.trimmed().isEmpty()) previous_was_element = false;
                     out += text;
@@ -215,7 +215,7 @@ QString render_plain_text(lxb_dom_node_t* root) {
 
             const QString tag = tag_name(child);
             const bool    block = is_block_tag(tag);
-            if (tag == QStringLiteral("br")) {
+            if (tag == "br") {
                 ensure_newline();
                 previous_was_element = false;
                 continue;
@@ -235,9 +235,9 @@ QString render_plain_text(lxb_dom_node_t* root) {
 
     if (root) walk(root);
 
-    out.replace(QRegularExpression(QStringLiteral("[ \t]+")), QStringLiteral(" "));
-    out.replace(QRegularExpression(QStringLiteral(" *\n *")), QStringLiteral("\n"));
-    out.replace(QRegularExpression(QStringLiteral("\n{3,}")), QStringLiteral("\n\n"));
+    out.replace(QRegularExpression("[ \t]+"), " ");
+    out.replace(QRegularExpression(" *\n *"), "\n");
+    out.replace(QRegularExpression("\n{3,}"), "\n\n");
     return out.trimmed();
 }
 
@@ -245,22 +245,22 @@ QString html_to_markdown(lxb_dom_node_t* root) {
     QStringList parts;
     render_markdown(root, parts);
     QString text = parts.join(QLatin1Char('\n'));
-    text.replace(QRegularExpression(QStringLiteral("\\n{3,}")), QStringLiteral("\n\n"));
+    text.replace(QRegularExpression("\\n{3,}"), "\n\n");
     return text.trimmed();
 }
 
 }  // namespace
 
 QString html_to_text(const QString& html, const QString& mode, const QString& base_url) {
-    if (mode != QStringLiteral("text") && mode != QStringLiteral("markdown")) {
+    if (mode != "text" && mode != "markdown") {
         throw InvalidArgument(
-            QStringLiteral("Unknown parse mode '%1'. Supported: text, markdown")
+            QString("Unknown parse mode '%1'. Supported: text, markdown")
                 .arg(mode));
     }
 
     Article article = extract_article(html, base_url);
     if (article.ok) {
-        if (mode == QStringLiteral("markdown")) return html_to_markdown(article.content);
+        if (mode == "markdown") return html_to_markdown(article.content);
         return render_plain_text(article.content);
     }
 
@@ -270,7 +270,7 @@ QString html_to_text(const QString& html, const QString& mode, const QString& ba
     if (!doc.valid()) return QString();
 
     lxb_dom_node_t* root = doc.root();
-    if (mode == QStringLiteral("text")) {
+    if (mode == "text") {
         strip_chrome(root, kTextChromeTags);
         return render_plain_text(root);
     }

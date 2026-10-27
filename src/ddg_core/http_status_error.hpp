@@ -18,7 +18,7 @@ struct HttpStatusError : HttpError {
     HttpResponse response;
 
     HttpStatusError(int s, HttpResponse r)
-        : HttpError(QStringLiteral("HTTP %1").arg(s)),
+        : HttpError(QString("HTTP %1").arg(s)),
           status(s),
           response(std::move(r)) {}
 };

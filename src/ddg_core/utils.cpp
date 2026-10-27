@@ -42,13 +42,13 @@ QString collapse_whitespace(const QString& text) {
     QStringList chunks;
     for (const QString& raw_line : text.split(QLatin1Char('\n'))) {
         const QString line = raw_line.trimmed();
-        for (const QString& raw_phrase : line.split(QStringLiteral("  "))) {
+        for (const QString& raw_phrase : line.split("  ")) {
             const QString phrase = raw_phrase.trimmed();
             if (!phrase.isEmpty()) chunks.push_back(phrase);
         }
     }
     QString joined = chunks.join(QLatin1Char(' '));
-    joined.replace(QRegularExpression(QStringLiteral("\\s+")), QStringLiteral(" "));
+    joined.replace(QRegularExpression("\\s+"), " ");
     return joined.trimmed();
 }
 
@@ -67,20 +67,20 @@ QString url_hostname(const QString& url) {
 QString normalize_cache_url(const QString& url) {
     const QUrl    u(url);
     const QString scheme =
-        u.scheme().isEmpty() ? QStringLiteral("http") : u.scheme().toLower();
+        u.scheme().isEmpty() ? "http" : u.scheme().toLower();
     const QString host = u.host().toLower();
     const int     port = u.port(-1);
 
     QString netloc = host;
-    if (port > 0 && !((scheme == QStringLiteral("http") && port == 80) ||
-                      (scheme == QStringLiteral("https") && port == 443))) {
+    if (port > 0 && !((scheme == "http" && port == 80) ||
+                      (scheme == "https" && port == 443))) {
         netloc = host + QLatin1Char(':') + QString::number(port);
     }
 
-    const QString path = u.path().isEmpty() ? QStringLiteral("/") : u.path();
+    const QString path = u.path().isEmpty() ? "/" : u.path();
     const QString query = u.query(QUrl::FullyEncoded);
 
-    QString out = scheme + QStringLiteral("://") + netloc + path;
+    QString out = scheme + "://" + netloc + path;
     if (!query.isEmpty()) out += QLatin1Char('?') + query;  // fragment intentionally dropped
     return out;
 }
@@ -94,10 +94,9 @@ bool is_ref_token(const QString& value) {
 }
 
 QString unknown_ref_error(const QString& token) {
-    return QStringLiteral(
-               "Error: Unknown link reference '%1'. Only ref:// tokens returned by "
-               "this server's search results can be expanded, and they are forgotten "
-               "when the server restarts. Run the search again to get a fresh token.")
+    return QString("Error: Unknown link reference '%1'. Only ref:// tokens returned by "
+                   "this server's search results can be expanded, and they are forgotten "
+                   "when the server restarts. Run the search again to get a fresh token.")
         .arg(trim(token));
 }
 
@@ -106,7 +105,7 @@ QString unknown_ref_error(const QString& token) {
 // ---------------------------------------------------------------------------
 
 std::optional<double> retry_after_seconds(const QMap<QString, QString>& headers) {
-    const auto it = headers.constFind(QStringLiteral("retry-after"));
+    const auto it = headers.constFind("retry-after");
     if (it == headers.cend()) return std::nullopt;
     bool         ok = false;
     const double v  = it.value().trimmed().toDouble(&ok);
@@ -171,36 +170,36 @@ bool is_disallowed(const QHostAddress& addr) {
 void validate_public_url(const QString& url) {
     const QUrl    u(url);
     const QString scheme = u.scheme().toLower();
-    if (scheme != QStringLiteral("http") && scheme != QStringLiteral("https")) {
+    if (scheme != "http" && scheme != "https") {
         throw BlockedUrlError(
-            QStringLiteral("unsupported URL scheme '%1://' (only http and https are allowed)")
+            QString("unsupported URL scheme '%1://' (only http and https are allowed)")
                 .arg(u.scheme()));
     }
 
     const QString host = u.host();
-    if (host.isEmpty()) throw BlockedUrlError(QStringLiteral("URL has no host"));
+    if (host.isEmpty()) throw BlockedUrlError("URL has no host");
 
     const QString lowered = host.toLower();
-    if (lowered == QStringLiteral("localhost") ||
-        lowered.endsWith(QStringLiteral(".localhost"))) {
+    if (lowered == "localhostQString(" ||
+        lowered.endsWith(").localhost")) {
         throw BlockedUrlError(
-            QStringLiteral("refusing to fetch loopback host '%1'").arg(host));
+            QString("refusing to fetch loopback host '%1'").arg(host));
     }
 
-    const int port = u.port(scheme == QStringLiteral("https") ? 443 : 80);
+    const int port = u.port(scheme == "https" ? 443 : 80);
     if (port <= 0 || port > 65535) {
-        throw BlockedUrlError(QStringLiteral("invalid port in URL '%1'").arg(url));
+        throw BlockedUrlError(QString("invalid port in URL '%1'").arg(url));
     }
 
     const QHostInfo info = QHostInfo::fromName(host);
     if (info.error() != QHostInfo::NoError || info.addresses().isEmpty()) {
-        throw BlockedUrlError(QStringLiteral("could not resolve host '%1': %2")
+        throw BlockedUrlError(QString("could not resolve host '%1': %2")
                                   .arg(host, info.errorString()));
     }
     for (const QHostAddress& addr : info.addresses()) {
         if (is_disallowed(addr)) {
             throw BlockedUrlError(
-                QStringLiteral("refusing to fetch '%1' — it resolves to non-public address %2")
+                QString("refusing to fetch '%1' — it resolves to non-public address %2")
                     .arg(host, addr.toString()));
         }
     }

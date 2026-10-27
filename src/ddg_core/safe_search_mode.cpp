@@ -8,27 +8,27 @@ namespace ddg {
 
 QString safe_search_value(SafeSearchMode m) {
     switch (m) {
-        case SafeSearchMode::Strict:   return QStringLiteral("1");
-        case SafeSearchMode::Moderate: return QStringLiteral("-1");
-        case SafeSearchMode::Off:      return QStringLiteral("-2");
+        case SafeSearchMode::Strict:   return "1";
+        case SafeSearchMode::Moderate: return "-1";
+        case SafeSearchMode::Off:      return "-2";
     }
-    return QStringLiteral("-1");
+    return "-1";
 }
 
 QString safe_search_name(SafeSearchMode m) {
     switch (m) {
-        case SafeSearchMode::Strict:   return QStringLiteral("STRICT");
-        case SafeSearchMode::Moderate: return QStringLiteral("MODERATE");
-        case SafeSearchMode::Off:      return QStringLiteral("OFF");
+        case SafeSearchMode::Strict:   return "STRICT";
+        case SafeSearchMode::Moderate: return "MODERATE";
+        case SafeSearchMode::Off:      return "OFF";
     }
-    return QStringLiteral("MODERATE");
+    return "MODERATE";
 }
 
 std::optional<SafeSearchMode> safe_search_from_name(const QString& name) {
     const QString n = to_lower(trim(name));
-    if (n == QStringLiteral("strict"))   return SafeSearchMode::Strict;
-    if (n == QStringLiteral("moderate")) return SafeSearchMode::Moderate;
-    if (n == QStringLiteral("off"))      return SafeSearchMode::Off;
+    if (n == "strict")   return SafeSearchMode::Strict;
+    if (n == "moderate") return SafeSearchMode::Moderate;
+    if (n == "off")      return SafeSearchMode::Off;
     return std::nullopt;
 }
 

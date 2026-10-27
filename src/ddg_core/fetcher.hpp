@@ -25,10 +25,10 @@ public:
         Transport transport;
         int       requests_per_minute      = 20;
         int       host_requests_per_minute = 0;  // 0 disables the per-host limiter
-        QString   rate_limit_strategy      = QStringLiteral("sliding");
+        QString   rate_limit_strategy      = "sliding";
         double    cache_ttl                = 300.0;
         int       cache_max_entries        = 64;
-        QString   parse_mode               = QStringLiteral("markdown");
+        QString   parse_mode               = "markdown";
     };
 
     WebContentFetcher(Config config, std::shared_ptr<LinkRegistry> links);

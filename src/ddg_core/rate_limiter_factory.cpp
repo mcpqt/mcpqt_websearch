@@ -12,14 +12,14 @@ namespace ddg {
 
 std::unique_ptr<RateLimiterBase> make_rate_limiter(const QString& strategy,
                                                    int            requests_per_minute) {
-    if (strategy == QStringLiteral("token_bucket")) {
+    if (strategy == "token_bucket") {
         return std::make_unique<TokenBucketLimiter>(requests_per_minute);
     }
-    if (strategy == QStringLiteral("sliding")) {
+    if (strategy == "sliding") {
         return std::make_unique<SlidingRateLimiter>(requests_per_minute);
     }
     throw InvalidArgument(
-        QStringLiteral("Unknown rate-limit strategy '%1'. Supported: sliding, token_bucket")
+        QString("Unknown rate-limit strategy '%1'. Supported: sliding, token_bucket")
             .arg(strategy));
 }
 
