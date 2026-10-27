@@ -16,6 +16,7 @@
 #include "webio_transport.hpp"
 
 #include <QByteArray>
+#include <QFuture>
 #include <QObject>
 #include <QString>
 #include <QVariant>
@@ -82,6 +83,10 @@ namespace
     void initialize(const mcp::HostInterface& host) override
     {
       m_host = host;
+      // webio's httpGet/httpPost return QFuture<QVariant>. The host marshals
+      // that return value into a QVariant, so the template instantiation must
+      // be registered in this process before callFunc invokes webio.
+      qRegisterMetaType<QFuture<QVariant>>("QFuture<QVariant>");
       const ddg::Transport transport
           = ddg::make_webio_transport(m_host.callFunc);
       m_log = [this](int level, const QString& message)

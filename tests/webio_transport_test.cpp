@@ -43,6 +43,12 @@ struct Call {
     QVariantList args;
 };
 
+QVariantMap map_arg(const QVariant& value) {
+    if (value.metaType() == QMetaType::fromType<QVariant>())
+        return value.value<QVariant>().toMap();
+    return value.toMap();
+}
+
 }  // namespace
 
 int main() {
@@ -77,7 +83,7 @@ int main() {
         check(call.args.size() == 3, QStringLiteral("GET argument count"));
         check(call.args.at(0).toString() == QStringLiteral("https://example.com/"),
               QStringLiteral("GET url"));
-        const QVariantMap sent_headers = call.args.at(1).toMap();
+        const QVariantMap sent_headers = map_arg(call.args.at(1));
         check(sent_headers.value(QStringLiteral("X-Test")).toString() ==
                   QStringLiteral("value"),
               QStringLiteral("GET request header"));
@@ -114,7 +120,7 @@ int main() {
                       "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)"),
               QStringLiteral("POST signature"));
         check(call.args.size() == 4, QStringLiteral("POST argument count"));
-        const QVariantMap form = call.args.at(1).toMap();
+        const QVariantMap form = map_arg(call.args.at(1));
         check(form.value(QStringLiteral("q")).toString() == QStringLiteral("term"),
               QStringLiteral("POST form"));
         check(response.status == 201, QStringLiteral("POST status"));

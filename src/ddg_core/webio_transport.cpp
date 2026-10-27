@@ -36,6 +36,14 @@ QVariant wait_for_future(QFuture<QVariant> future) {
     return future.result();
 }
 
+// The host converts each argument to the slot's declared type. A QVariantMap
+// argument cannot be converted to a QVariant parameter by QVariant::convert,
+// so wrap the map in a QVariant-typed QVariant before crossing the host ABI.
+QVariant wrap_variant(const QVariant& value) {
+    QVariant inner = value;
+    return QVariant(QMetaType::fromType<QVariant>(), &inner);
+}
+
 QVariantMap to_variant_map(const QMap<QString, QString>& values) {
     QVariantMap map;
     for (auto it = values.cbegin(); it != values.cend(); ++it) {
@@ -71,19 +79,24 @@ Transport make_webio_transport(HostCallFunc call_func) {
                 handle = call_func(
                     QStringLiteral(
                         "QFuture<QVariant> WebioPlugin::httpPost(QString,QVariant,QVariant,uint32_t)"),
-                    { QVariant(url), QVariant(to_variant_map(request.form)),
-                      QVariant(headers),
+                    { QVariant(url), wrap_variant(QVariant(to_variant_map(request.form))),
+                      wrap_variant(QVariant(headers)),
                       QVariant(static_cast<uint>(request.timeout_ms)) });
             } else {
                 handle = call_func(
                     QStringLiteral(
                         "QFuture<QVariant> WebioPlugin::httpGet(QString,QVariant,uint32_t)"),
-                    { QVariant(url), QVariant(headers),
+                    { QVariant(url), wrap_variant(QVariant(headers)),
                       QVariant(static_cast<uint>(request.timeout_ms)) });
             }
         } catch (const std::exception& e) {
-            throw HttpError(QStringLiteral("webio call failed: %1")
-                                .arg(QString::fromUtf8(e.what())));
+            const QVariant w_headers = wrap_variant(QVariant(headers));
+            throw HttpError(QStringLiteral("webio call failed: %1 [url=%2 headers=%3 inner=%4 timeout=%5]")
+                                .arg(QString::fromUtf8(e.what()))
+                                .arg(QVariant(url).metaType().name())
+                                .arg(w_headers.metaType().name())
+                                .arg(w_headers.value<QVariant>().metaType().name())
+                                .arg(QVariant(static_cast<uint>(request.timeout_ms)).metaType().name()));
         }
 
         QFuture<QVariant> future;
@@ -94,7 +107,12 @@ Transport make_webio_transport(HostCallFunc call_func) {
                                 .arg(QString::fromUtf8(e.what())));
         }
         if (!future.isValid()) {
-            throw HttpError(QStringLiteral("webio returned an invalid future"));
+            throw HttpError(QStringLiteral(
+                "webio returned an invalid future (handle type=%1 valid=%2 convertible=%3)")
+                .arg(QString::fromLatin1(handle.metaType().name()))
+                .arg(handle.isValid() ? QStringLiteral("yes") : QStringLiteral("no"))
+                .arg(handle.canConvert<QFuture<QVariant>>() ? QStringLiteral("yes")
+                                                             : QStringLiteral("no")));
         }
 
         QVariant resolved;
