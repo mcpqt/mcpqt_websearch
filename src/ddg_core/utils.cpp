@@ -35,20 +35,6 @@ QString url_join(const QString& base, const QString& location) {
     return QUrl(base).resolved(QUrl(location)).toString();
 }
 
-QString normalize_cache_url(const QString& str)
-{
-  QUrl::FormattingOptions flags = QUrl::RemoveFragment | QUrl::NormalizePathSegments;
-  QUrl url(str);
-  if (url.scheme().isEmpty())
-    url = QUrl::fromUserInput(str), url.setScheme("https");
-  if(url.query().isEmpty())
-    flags |= QUrl::RemoveQuery;
-  if((url.scheme() == "http" && url.port(80) == 80) ||
-     (url.scheme() == "https" && url.port(443) == 443))
-    flags |= QUrl::RemovePort;
-  return url.toString(flags);
-}
-
 // ---------------------------------------------------------------------------
 // ref:// tokens
 // ---------------------------------------------------------------------------

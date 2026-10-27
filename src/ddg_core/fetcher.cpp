@@ -8,26 +8,33 @@
 #include "utils.hpp"
 
 #include <QString>
+#include <QUrl>
 
 #include <exception>
 
-namespace ddg {
-namespace {
+namespace ddg
+{
 
 constexpr int kMaxRedirects = 5;
+static const QString kFetchUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 
-const QString kFetchUserAgent =
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
+static constexpr bool is_redirect(int status)
+{ return status == 301 || status == 302 || status == 303 || status == 307 || status == 308; }
 
-bool is_redirect(int status) {
-    return status == 301 || status == 302 || status == 303 || status == 307 || status == 308;
+static QString content_cache_key(const QString& str, const QString& parse_mode)
+{
+  QUrl::FormattingOptions flags = QUrl::RemoveFragment | QUrl::NormalizePathSegments;
+  QUrl url(str);
+  if (url.scheme().isEmpty())
+    url = QUrl::fromUserInput(str), url.setScheme("https");
+  if(url.query().isEmpty())
+    flags |= QUrl::RemoveQuery;
+  if((url.scheme() == "http" && url.port(80) == 80) ||
+      (url.scheme() == "https" && url.port(443) == 443))
+    flags |= QUrl::RemovePort;
+  return url.toString(flags) + '|' + parse_mode;
 }
 
-QString content_cache_key(const QString& url, const QString& parse_mode) {
-    return normalize_cache_url(url) + QLatin1Char('|') + parse_mode;
-}
-
-}  // namespace
 
 WebContentFetcher::WebContentFetcher(Config config, std::shared_ptr<LinkRegistry> links)
     : m_config(std::move(config)),
@@ -79,10 +86,12 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
                                            int            max_length,
                                            const QString& parse_mode) {
     QString url = url_in;
-    if (url.trimmed().startsWith(kRefScheme, Qt::CaseInsensitive)) {
-        const QString resolved = m_links->resolve(url);
-        if (resolved.isNull()) return unknown_ref_error(url);
-        url = resolved;
+    if (url.trimmed().startsWith(kRefScheme, Qt::CaseInsensitive))
+    {
+        if (const QString resolved = m_links->resolve(url); !resolved.isNull())
+          url = resolved;
+        else
+          return unknown_ref_error(url);
     }
 
     const QString effective_mode =
@@ -93,16 +102,20 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
     }
 
     try {
-        const QString cache_key =
-            m_cache.enabled() ? content_cache_key(url, effective_mode)
-                              : QString();
+        QString text, cache_key;
+        if(m_cache.enabled())
+        {
+            cache_key = content_cache_key(url, effective_mode);
+            text = m_cache.get(cache_key);
+        }
+
         // A cache hit skips guard_url on purpose: an entry only exists after a
         // guarded fetch of the same normalized URL succeeded.
-        QString    text      = cache_key.isNull() ? QString() : m_cache.get(cache_key);
         const bool cache_hit = !text.isNull();
 
         if (!cache_hit) {
-            if (m_host_limiter) m_host_limiter->acquire(url);
+            if (m_host_limiter)
+              m_host_limiter->acquire(url);
             m_rate_limiter->acquire();
 
             log_info(log, QString("Fetching content from: %1 (parse_mode=%2)")

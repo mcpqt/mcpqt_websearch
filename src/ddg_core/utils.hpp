@@ -27,9 +27,6 @@ QString strip_slashes(QString s);
 /// RFC 3986 reference resolution (httpx.URL(base).join(location)).
 QString url_join(const QString& base, const QString& location);
 
-/// Canonicalize a URL for use as a cache key (drop fragment, lowercase host).
-QString normalize_cache_url(const QString& url);
-
 // ---------------------------------------------------------------------------
 // ref:// tokens
 // ---------------------------------------------------------------------------

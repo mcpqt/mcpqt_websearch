@@ -1722,7 +1722,7 @@ void Readability::fix_relative_uris(Node* content) {
         }
     }
 
-    for (const QString& tag : {"img", "picture",
+    for (const QString tag : {"img", "picture",
                                "figure", "video",
                                "audio", "source"}) {
         for (Node* media : all_by_tag(content, tag)) {
