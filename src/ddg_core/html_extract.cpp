@@ -13,6 +13,7 @@
 #include <QString>
 #include <QStringList>
 
+#include <functional>
 #include <vector>
 
 namespace ddg::html {
@@ -27,6 +28,23 @@ const char* const kMainSelectors[] = {
 const QStringList kTextChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
                                      QStringLiteral("nav"), QStringLiteral("header"),
                                      QStringLiteral("footer")};
+const QStringList kBlockTags = {
+    QStringLiteral("address"), QStringLiteral("article"), QStringLiteral("aside"),
+    QStringLiteral("blockquote"), QStringLiteral("dd"), QStringLiteral("details"),
+    QStringLiteral("div"), QStringLiteral("dl"), QStringLiteral("dt"),
+    QStringLiteral("fieldset"), QStringLiteral("figcaption"), QStringLiteral("figure"),
+    QStringLiteral("footer"), QStringLiteral("form"), QStringLiteral("h1"),
+    QStringLiteral("h2"), QStringLiteral("h3"), QStringLiteral("h4"),
+    QStringLiteral("h5"), QStringLiteral("h6"), QStringLiteral("header"),
+    QStringLiteral("hr"), QStringLiteral("li"), QStringLiteral("main"),
+    QStringLiteral("nav"), QStringLiteral("ol"), QStringLiteral("p"),
+    QStringLiteral("pre"), QStringLiteral("section"), QStringLiteral("summary"),
+    QStringLiteral("table"), QStringLiteral("tbody"), QStringLiteral("td"),
+    QStringLiteral("tfoot"), QStringLiteral("th"), QStringLiteral("thead"),
+    QStringLiteral("tr"), QStringLiteral("ul")};
+
+bool is_block_tag(const QString& tag) { return kBlockTags.contains(tag); }
+
 const QStringList kMainChromeTags = {QStringLiteral("script"), QStringLiteral("style"),
                                      QStringLiteral("nav"), QStringLiteral("header"),
                                      QStringLiteral("footer"), QStringLiteral("aside"),
@@ -172,10 +190,74 @@ void render_markdown(lxb_dom_node_t* el, QStringList& parts) {
         parts.push_back(QStringLiteral("---"));
         parts.push_back(QString());
     } else {
+        bool previous_was_element = false;
         for (lxb_dom_node_t* child = el->first_child; child; child = child->next) {
-            render_markdown(child, parts);
+            if (is_element(child)) {
+                if (previous_was_element) parts.push_back(QString());
+                render_markdown(child, parts);
+                previous_was_element = true;
+            } else if (is_text(child)) {
+                render_markdown(child, parts);
+                if (!get_text(child, QString(), false).trimmed().isEmpty())
+                    previous_was_element = false;
+            }
         }
     }
+}
+
+QString render_plain_text(lxb_dom_node_t* root) {
+    QString out;
+
+    auto ensure_newline = [&out]() {
+        if (!out.isEmpty() && !out.endsWith(QLatin1Char('\n'))) out += QLatin1Char('\n');
+    };
+    auto ensure_space = [&out]() {
+        if (!out.isEmpty() && !out.endsWith(QLatin1Char(' ')) &&
+            !out.endsWith(QLatin1Char('\n')))
+            out += QLatin1Char(' ');
+    };
+
+    std::function<void(lxb_dom_node_t*)> walk = [&](lxb_dom_node_t* node) {
+        bool previous_was_element = false;
+        for (lxb_dom_node_t* child = node->first_child; child; child = child->next) {
+            if (is_text(child)) {
+                QString text = get_text(child, QString(), false);
+                text.replace(QRegularExpression(QStringLiteral("[ \t\r\n]+")),
+                             QStringLiteral(" "));
+                if (!text.isEmpty()) {
+                    if (!text.trimmed().isEmpty()) previous_was_element = false;
+                    out += text;
+                }
+                continue;
+            }
+            if (!is_element(child)) continue;
+
+            const QString tag = tag_name(child);
+            const bool    block = is_block_tag(tag);
+            if (tag == QStringLiteral("br")) {
+                ensure_newline();
+                previous_was_element = false;
+                continue;
+            }
+            if (block) {
+                ensure_newline();
+            } else if (previous_was_element) {
+                ensure_space();
+            }
+
+            walk(child);
+
+            if (block) ensure_newline();
+            previous_was_element = !block;
+        }
+    };
+
+    if (root) walk(root);
+
+    out.replace(QRegularExpression(QStringLiteral("[ \t]+")), QStringLiteral(" "));
+    out.replace(QRegularExpression(QStringLiteral(" *\n *")), QStringLiteral("\n"));
+    out.replace(QRegularExpression(QStringLiteral("\n{3,}")), QStringLiteral("\n\n"));
+    return out.trimmed();
 }
 
 QString html_to_markdown(lxb_dom_node_t* root) {
@@ -199,7 +281,7 @@ QString html_to_text(const QString& html, const QString& mode, const QString& ba
     Article article = extract_article(html, base_url);
     if (article.ok) {
         if (mode == QStringLiteral("markdown")) return html_to_markdown(article.content);
-        return collapse_whitespace(article.text_content);
+        return render_plain_text(article.content);
     }
 
     // Readability needs a body with readable content. For tiny/structural
@@ -210,12 +292,12 @@ QString html_to_text(const QString& html, const QString& mode, const QString& ba
     lxb_dom_node_t* root = doc.root();
     if (mode == QStringLiteral("text")) {
         strip_chrome(root, kTextChromeTags);
-        return collapse_whitespace(get_text(root, QString(), false));
+        return render_plain_text(root);
     }
     strip_chrome(root, kMainChromeTags);
     lxb_dom_node_t* content = select_main_root(root);
     if (mode == QStringLiteral("main")) {
-        return collapse_whitespace(get_text(content, QString(), false));
+        return render_plain_text(content);
     }
     return html_to_markdown(content);
 }
