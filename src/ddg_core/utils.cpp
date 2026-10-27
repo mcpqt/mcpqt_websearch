@@ -7,7 +7,6 @@
 
 #include <QHostAddress>
 #include <QHostInfo>
-#include <QRegularExpression>
 #include <QString>
 #include <QStringList>
 #include <QUrl>
@@ -22,8 +21,6 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-QString to_lower(QString s) { return s.toLower(); }
-
 bool starts_with_ci(const QString& haystack, const QString& needle) {
     return haystack.startsWith(needle, Qt::CaseInsensitive);
 }
@@ -35,20 +32,6 @@ QString strip_slashes(QString s) {
 }
 
 bool contains(const QStringList& v, const QString& s) { return v.contains(s); }
-
-QString collapse_whitespace(const QString& text) {
-    QStringList chunks;
-    for (const QString& raw_line : text.split(QLatin1Char('\n'))) {
-        const QString line = raw_line.trimmed();
-        for (const QString& raw_phrase : line.split("  ")) {
-            const QString phrase = raw_phrase.trimmed();
-            if (!phrase.isEmpty()) chunks.push_back(phrase);
-        }
-    }
-    QString joined = chunks.join(QLatin1Char(' '));
-    joined.replace(QRegularExpression("\\s+"), " ");
-    return joined.trimmed();
-}
 
 // ---------------------------------------------------------------------------
 // URLs

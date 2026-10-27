@@ -18,13 +18,9 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-QString to_lower(QString s);
 bool    starts_with_ci(const QString& haystack, const QString& needle);
 QString strip_slashes(QString s);
 bool    contains(const QStringList& v, const QString& s);
-
-/// Collapse runs of whitespace to single spaces, dropping blank lines.
-QString collapse_whitespace(const QString& text);
 
 // ---------------------------------------------------------------------------
 // URLs (backed by QUrl)

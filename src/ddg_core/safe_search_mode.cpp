@@ -25,7 +25,7 @@ QString safe_search_name(SafeSearchMode m) {
 }
 
 std::optional<SafeSearchMode> safe_search_from_name(const QString& name) {
-    const QString n = to_lower(name.trimmed());
+    const QString n = name.trimmed().toLower();
     if (n == "strict")   return SafeSearchMode::Strict;
     if (n == "moderate") return SafeSearchMode::Moderate;
     if (n == "off")      return SafeSearchMode::Off;

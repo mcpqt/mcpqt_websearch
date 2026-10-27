@@ -55,7 +55,7 @@ QString lite_safe_search_value(SafeSearchMode m) {
 /// AI agent is likely to emit and reject everything else instead of silently
 /// searching without a time filter.
 QString normalize_timelimit(const QString& raw) {
-    const QString v = to_lower(raw.trimmed());
+    const QString v = raw.trimmed().toLower();
     if (v.isEmpty() || v == "all" || v == "any" ||
         v == "none")
         return QString();

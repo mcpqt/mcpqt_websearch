@@ -34,7 +34,7 @@ namespace
     {
       return false;
     }
-    const QString s = ddg::to_lower(v.trimmed());
+    const QString s = v.trimmed().toLower();
     return s == "1" || s == "true"
            || s == "yes" || s == "on";
   }
@@ -79,7 +79,7 @@ namespace
       if(const QString v = qEnvironmentVariable("DDG_SAFE_SEARCH");
          !v.isEmpty())
       {
-        safe_search_name = ddg::to_lower(v.trimmed());
+        safe_search_name = v.trimmed().toLower();
       }
 
       QString region = "wt-wt";
@@ -92,7 +92,7 @@ namespace
       if(const QString v = qEnvironmentVariable("DDG_SEARCH_BACKEND");
          !v.isEmpty())
       {
-        search_backend = ddg::to_lower(v.trimmed());
+        search_backend = v.trimmed().toLower();
       }
 
       const int search_rpm
@@ -115,14 +115,14 @@ namespace
       if(const QString v = qEnvironmentVariable("DDG_RATE_LIMIT_STRATEGY");
          !v.isEmpty())
       {
-        rate_strategy = ddg::to_lower(v.trimmed());
+        rate_strategy = v.trimmed().toLower();
       }
 
       QString parse_mode = "markdown";
       if(const QString v = qEnvironmentVariable("DDG_PARSE_MODE");
          !v.isEmpty())
       {
-        parse_mode = ddg::to_lower(v.trimmed());
+        parse_mode = v.trimmed().toLower();
       }
 
       const ddg::SafeSearchMode mode
