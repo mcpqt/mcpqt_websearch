@@ -6,6 +6,7 @@
 #include "utils.hpp"
 
 #include <QMutexLocker>
+#include <QUrl>
 
 #include <memory>
 
@@ -15,7 +16,7 @@ HostRateLimiter::HostRateLimiter(QString strategy, int requests_per_minute)
     : strategy_(std::move(strategy)), rpm_(requests_per_minute) {}
 
 void HostRateLimiter::acquire(const QString& url) {
-    QString host = url_hostname(url);
+    QString host = QUrl(url).host().toLower();
     if (host.isEmpty()) host = "unknown";
 
     RateLimiterBase* limiter = nullptr;

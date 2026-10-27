@@ -21,10 +21,6 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-bool starts_with_ci(const QString& haystack, const QString& needle) {
-    return haystack.startsWith(needle, Qt::CaseInsensitive);
-}
-
 QString strip_slashes(QString s) {
     while (s.startsWith(QLatin1Char('/'))) s.remove(0, 1);
     while (s.endsWith(QLatin1Char('/'))) s.chop(1);
@@ -39,10 +35,6 @@ bool contains(const QStringList& v, const QString& s) { return v.contains(s); }
 
 QString url_join(const QString& base, const QString& location) {
     return QUrl(base).resolved(QUrl(location)).toString();
-}
-
-QString url_hostname(const QString& url) {
-    return QUrl(url).host().toLower();
 }
 
 QString normalize_cache_url(const QString& url) {
@@ -69,10 +61,6 @@ QString normalize_cache_url(const QString& url) {
 // ---------------------------------------------------------------------------
 // ref:// tokens
 // ---------------------------------------------------------------------------
-
-bool is_ref_token(const QString& value) {
-    return starts_with_ci(value.trimmed(), kRefScheme);
-}
 
 QString unknown_ref_error(const QString& token) {
     return QString("Error: Unknown link reference '%1'. Only ref:// tokens returned by "

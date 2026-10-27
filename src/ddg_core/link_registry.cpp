@@ -51,7 +51,7 @@ QString LinkRegistry::shorten(const QString& url) {
 
 QString LinkRegistry::resolve(const QString& token) {
     QString key = token.trimmed();
-    if (starts_with_ci(key, kRefScheme)) key = key.mid(kRefScheme.size());
+    if (key.startsWith(kRefScheme, Qt::CaseInsensitive)) key = key.mid(kRefScheme.size());
     key = strip_slashes(key.trimmed()).toLower();
 
     QMutexLocker<QMutex> locker(&mu_);

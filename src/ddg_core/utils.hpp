@@ -18,7 +18,6 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-bool    starts_with_ci(const QString& haystack, const QString& needle);
 QString strip_slashes(QString s);
 bool    contains(const QStringList& v, const QString& s);
 
@@ -29,9 +28,6 @@ bool    contains(const QStringList& v, const QString& s);
 /// RFC 3986 reference resolution (httpx.URL(base).join(location)).
 QString url_join(const QString& base, const QString& location);
 
-/// Lower-cased hostname, or "" if the URL has no host.
-QString url_hostname(const QString& url);
-
 /// Canonicalize a URL for use as a cache key (drop fragment, lowercase host).
 QString normalize_cache_url(const QString& url);
 
@@ -39,7 +35,6 @@ QString normalize_cache_url(const QString& url);
 // ref:// tokens
 // ---------------------------------------------------------------------------
 
-bool    is_ref_token(const QString& value);
 QString unknown_ref_error(const QString& token);
 
 // ---------------------------------------------------------------------------

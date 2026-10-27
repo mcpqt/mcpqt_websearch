@@ -43,8 +43,6 @@ WebContentFetcher::WebContentFetcher(Config config, std::shared_ptr<LinkRegistry
     }
 }
 
-WebContentFetcher::~WebContentFetcher() = default;
-
 void WebContentFetcher::guard_url(const QString& url) const {
     if (!m_config.allow_private_urls) validate_public_url(url);
 }
@@ -81,7 +79,7 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
                                            int            max_length,
                                            const QString& parse_mode) {
     QString url = url_in;
-    if (is_ref_token(url)) {
+    if (url.trimmed().startsWith(kRefScheme, Qt::CaseInsensitive)) {
         const QString resolved = m_links->resolve(url);
         if (resolved.isNull()) return unknown_ref_error(url);
         url = resolved;
