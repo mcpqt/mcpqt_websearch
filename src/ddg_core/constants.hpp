@@ -16,9 +16,6 @@ inline constexpr int kDefaultRefUrlThreshold  = 120;
 inline const QStringList kSupportedRateStrategies = {"sliding",
                                                      "token_bucket"};
 
-// There is only one fetch backend; the actual transport is webio.
-inline const QString kCompiledFetchBackend = "qt";
-
 // server.py: SUPPORTED_PARSE_MODES
 inline const QStringList kSupportedParseModes = {"text",
                                                  "raw",

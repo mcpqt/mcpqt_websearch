@@ -88,13 +88,6 @@ namespace
         region = v.trimmed();
       }
 
-      QString search_backend = ddg::kCompiledFetchBackend;
-      if(const QString v = qEnvironmentVariable("DDG_SEARCH_BACKEND");
-         !v.isEmpty())
-      {
-        search_backend = v.trimmed().toLower();
-      }
-
       const int search_rpm
           = qEnvironmentVariable("DDG_SEARCH_RPM", "30").toInt();
       const int fetch_rpm
@@ -134,7 +127,6 @@ namespace
       ddg::DuckDuckGoSearcher::Config search_cfg;
       search_cfg.safe_search = mode;
       search_cfg.default_region = region;
-      search_cfg.backend = search_backend;
       search_cfg.transport = transport;
       search_cfg.requests_per_minute = search_rpm;
       search_cfg.rate_limit_strategy = rate_strategy;

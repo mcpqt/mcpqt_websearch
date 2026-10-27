@@ -67,7 +67,6 @@ Configuration is read from environment variables at plugin load:
 | `DDG_SAFE_SEARCH` | `MODERATE` | Safe-search level: `STRICT`, `MODERATE`, or `OFF`. |
 | `DDG_REGION` | `wt-wt` | Default region/language code. |
 | `DDG_PARSE_MODE` | `markdown` | Page output mode: `markdown`, `text`, or `raw` (unfiltered HTML). |
-| `DDG_SEARCH_BACKEND` | build default | Advisory search backend name (webio always performs the request). |
 | `DDG_SEARCH_RPM`, `DDG_FETCH_RPM`, `DDG_FETCH_HOST_RPM` | `30`, `20`, `0` | Rate limits (requests per minute). |
 | `DDG_CACHE_TTL`, `DDG_CACHE_MAX_ENTRIES` | `300`, `64` | Fetch cache lifetime and size. |
 | `DDG_RATE_LIMIT_STRATEGY` | `sliding` | Rate-limiter strategy. |

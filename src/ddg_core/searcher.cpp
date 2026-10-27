@@ -157,10 +157,8 @@ QString DuckDuckGoSearcher::request(const QString& data_query,
     }
     if (is_search_block(resp.status, resp.body)) {
         log_info(log,
-                 QString("DuckDuckGo returned a block signal (HTTP %1) to this "
-                         "backend; the installed build only includes the '%2' backend.")
-                     .arg(resp.status)
-                     .arg(kCompiledFetchBackend));
+                 QString("DuckDuckGo returned a block signal (HTTP %1).")
+                     .arg(resp.status));
     }
     return resp.body;
 }

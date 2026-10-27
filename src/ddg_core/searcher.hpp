@@ -49,7 +49,6 @@ public:
     struct Config {
         SafeSearchMode safe_search          = SafeSearchMode::Moderate;
         QString        default_region;
-        QString        backend              = kCompiledFetchBackend;
         Transport      transport;
         int            requests_per_minute  = 30;
         QString        rate_limit_strategy  = "sliding";
