@@ -34,7 +34,7 @@ namespace
     {
       return false;
     }
-    const QString s = ddg::to_lower(ddg::trim(v));
+    const QString s = ddg::to_lower(v.trimmed());
     return s == "1" || s == "true"
            || s == "yes" || s == "on";
   }
@@ -79,20 +79,20 @@ namespace
       if(const QString v = qEnvironmentVariable("DDG_SAFE_SEARCH");
          !v.isEmpty())
       {
-        safe_search_name = ddg::to_lower(ddg::trim(v));
+        safe_search_name = ddg::to_lower(v.trimmed());
       }
 
       QString region = "wt-wt";
       if(const QString v = qEnvironmentVariable("DDG_REGION"); !v.isEmpty())
       {
-        region = ddg::trim(v);
+        region = v.trimmed();
       }
 
       QString search_backend = ddg::kCompiledFetchBackend;
       if(const QString v = qEnvironmentVariable("DDG_SEARCH_BACKEND");
          !v.isEmpty())
       {
-        search_backend = ddg::to_lower(ddg::trim(v));
+        search_backend = ddg::to_lower(v.trimmed());
       }
 
       const int search_rpm
@@ -115,14 +115,14 @@ namespace
       if(const QString v = qEnvironmentVariable("DDG_RATE_LIMIT_STRATEGY");
          !v.isEmpty())
       {
-        rate_strategy = ddg::to_lower(ddg::trim(v));
+        rate_strategy = ddg::to_lower(v.trimmed());
       }
 
       QString parse_mode = "markdown";
       if(const QString v = qEnvironmentVariable("DDG_PARSE_MODE");
          !v.isEmpty())
       {
-        parse_mode = ddg::to_lower(ddg::trim(v));
+        parse_mode = ddg::to_lower(v.trimmed());
       }
 
       const ddg::SafeSearchMode mode

@@ -22,8 +22,6 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-QString trim(QString s) { return s.trimmed(); }
-
 QString to_lower(QString s) { return s.toLower(); }
 
 bool starts_with_ci(const QString& haystack, const QString& needle) {
@@ -90,14 +88,14 @@ QString normalize_cache_url(const QString& url) {
 // ---------------------------------------------------------------------------
 
 bool is_ref_token(const QString& value) {
-    return starts_with_ci(trim(value), kRefScheme);
+    return starts_with_ci(value.trimmed(), kRefScheme);
 }
 
 QString unknown_ref_error(const QString& token) {
     return QString("Error: Unknown link reference '%1'. Only ref:// tokens returned by "
                    "this server's search results can be expanded, and they are forgotten "
                    "when the server restarts. Run the search again to get a fresh token.")
-        .arg(trim(token));
+        .arg(token.trimmed());
 }
 
 // ---------------------------------------------------------------------------

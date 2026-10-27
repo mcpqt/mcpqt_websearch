@@ -18,7 +18,6 @@ namespace ddg {
 // Strings
 // ---------------------------------------------------------------------------
 
-QString trim(QString s);
 QString to_lower(QString s);
 bool    starts_with_ci(const QString& haystack, const QString& needle);
 QString strip_slashes(QString s);

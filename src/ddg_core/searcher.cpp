@@ -57,7 +57,7 @@ QString lite_safe_search_value(SafeSearchMode m) {
 /// AI agent is likely to emit and reject everything else instead of silently
 /// searching without a time filter.
 QString normalize_timelimit(const QString& raw) {
-    const QString v = to_lower(trim(raw));
+    const QString v = to_lower(raw.trimmed());
     if (v.isEmpty() || v == "all" || v == "any" ||
         v == "none")
         return QString();
@@ -89,7 +89,7 @@ QString normalize_timelimit(const QString& raw) {
 /// to zero results silently.
 bool is_search_block(int status, const QString& html) {
     if (status == 202 || status == 403) return true;
-    if (status == 200 && trim(html).isEmpty()) return true;
+    if (status == 200 && html.trimmed().isEmpty()) return true;
     return false;
 }
 
