@@ -14,17 +14,17 @@ namespace ddg::html {
 class Document {
 public:
     Document() = default;
-    explicit Document(lxb_html_document_t* doc) : doc_(doc) {}
+    explicit Document(lxb_html_document_t* doc) : m_doc(doc) {}
 
     Document(const Document&)            = delete;
     Document& operator=(const Document&) = delete;
 
-    Document(Document&& other) noexcept : doc_(other.doc_) { other.doc_ = nullptr; }
+    Document(Document&& other) noexcept : m_doc(other.m_doc) { other.m_doc = nullptr; }
     Document& operator=(Document&& other) noexcept {
         if (this != &other) {
             destroy();
-            doc_       = other.doc_;
-            other.doc_ = nullptr;
+            m_doc       = other.m_doc;
+            other.m_doc = nullptr;
         }
         return *this;
     }
@@ -34,10 +34,10 @@ public:
     /// Parse an HTML string. On failure the returned Document is invalid().
     static Document parse(const QString& html);
 
-    bool                valid() const { return doc_ != nullptr; }
-    explicit operator bool() const { return doc_ != nullptr; }
+    bool                valid() const { return m_doc != nullptr; }
+    explicit operator bool() const { return m_doc != nullptr; }
 
-    lxb_html_document_t* raw() const { return doc_; }
+    lxb_html_document_t* raw() const { return m_doc; }
 
     /// The document node (root of the tree; children are <html> etc.).
     lxb_dom_node_t* root() const;
@@ -45,7 +45,7 @@ public:
 private:
     void destroy();
 
-    lxb_html_document_t* doc_ = nullptr;
+    lxb_html_document_t* m_doc = nullptr;
 };
 
 }  // namespace ddg::html

@@ -27,8 +27,6 @@ QString strip_slashes(QString s) {
     return s;
 }
 
-bool contains(const QStringList& v, const QString& s) { return v.contains(s); }
-
 // ---------------------------------------------------------------------------
 // URLs
 // ---------------------------------------------------------------------------

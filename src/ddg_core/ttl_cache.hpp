@@ -18,7 +18,7 @@ class TTLCache {
 public:
     TTLCache(double ttl_seconds, int max_entries);
 
-    bool        enabled() const { return ttl_ > 0 && max_entries_ > 0; }
+    bool        enabled() const { return m_ttl > 0 && m_max_entries > 0; }
     std::size_t size() const;
 
     QString get(const QString& key);
@@ -33,11 +33,11 @@ private:
         QString value;
     };
 
-    double               ttl_;
-    int                  max_entries_;
-    mutable QMutex       mu_;
-    QMap<QString, Entry> store_;
-    QStringList          order_;  // front = LRU
+    double               m_ttl;
+    int                  m_max_entries;
+    mutable QMutex       m_mutex;
+    QMap<QString, Entry> m_store;
+    QStringList          m_order;  // front = LRU
 };
 
 }  // namespace ddg

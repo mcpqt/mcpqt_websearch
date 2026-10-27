@@ -13,7 +13,7 @@
 namespace ddg {
 
 HostRateLimiter::HostRateLimiter(QString strategy, int requests_per_minute)
-    : strategy_(std::move(strategy)), rpm_(requests_per_minute) {}
+    : m_strategy(std::move(strategy)), m_rpm(requests_per_minute) {}
 
 void HostRateLimiter::acquire(const QString& url) {
     QString host = QUrl(url).host().toLower();
@@ -21,20 +21,20 @@ void HostRateLimiter::acquire(const QString& url) {
 
     RateLimiterBase* limiter = nullptr;
     {
-        QMutexLocker<QMutex> locker(&mu_);
+        QMutexLocker<QMutex> locker(&m_mutex);
         // Drop limiters for hosts that have gone quiet so the map does not grow
         // one entry per distinct host for the life of the server.
-        for (auto it = limiters_.begin(); it != limiters_.end();) {
+        for (auto it = m_limiters.begin(); it != m_limiters.end();) {
             if (it.key() != host && it.value()->idle()) {
-                it = limiters_.erase(it);
+                it = m_limiters.erase(it);
             } else {
                 ++it;
             }
         }
-        auto it = limiters_.find(host);
-        if (it == limiters_.end()) {
-            std::shared_ptr<RateLimiterBase> owned = make_rate_limiter(strategy_, rpm_);
-            it = limiters_.insert(host, owned);
+        auto it = m_limiters.find(host);
+        if (it == m_limiters.end()) {
+            std::shared_ptr<RateLimiterBase> owned = make_rate_limiter(m_strategy, m_rpm);
+            it = m_limiters.insert(host, owned);
         }
         limiter = it.value().get();
     }

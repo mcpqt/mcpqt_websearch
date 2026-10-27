@@ -21,14 +21,14 @@ Document Document::parse(const QString& html) {
 }
 
 lxb_dom_node_t* Document::root() const {
-    if (!doc_) return nullptr;
-    return lxb_dom_interface_node(doc_);
+    if (!m_doc) return nullptr;
+    return lxb_dom_interface_node(m_doc);
 }
 
 void Document::destroy() {
-    if (doc_) {
-        lxb_html_document_destroy(doc_);
-        doc_ = nullptr;
+    if (m_doc) {
+        lxb_html_document_destroy(m_doc);
+        m_doc = nullptr;
     }
 }
 

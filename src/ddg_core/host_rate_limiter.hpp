@@ -21,10 +21,10 @@ public:
     void acquire(const QString& url);
 
 private:
-    QString                                         strategy_;
-    int                                             rpm_;
-    QMutex                                          mu_;
-    QMap<QString, std::shared_ptr<RateLimiterBase>> limiters_;
+    QString                                         m_strategy;
+    int                                             m_rpm;
+    QMutex                                          m_mutex;
+    QMap<QString, std::shared_ptr<RateLimiterBase>> m_limiters;
 };
 
 }  // namespace ddg

@@ -34,10 +34,10 @@ private:
 
     void evict_lru_locked();
 
-    std::size_t          max_entries_;
-    mutable QMutex       mu_;
-    QMap<QString, Entry> map_;
-    QStringList          order_;  // front = LRU
+    std::size_t          m_max_entries;
+    mutable QMutex       m_mutex;
+    QMap<QString, Entry> m_map;
+    QStringList          m_order;  // front = LRU
 };
 
 }  // namespace ddg

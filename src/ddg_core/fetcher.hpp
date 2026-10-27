@@ -32,7 +32,7 @@ public:
     };
 
     WebContentFetcher(Config config, std::shared_ptr<LinkRegistry> links);
-    ~WebContentFetcher();
+    ~WebContentFetcher() = default;
 
     QString fetch_and_parse(const QString& url,
                             const LogFn&   log,

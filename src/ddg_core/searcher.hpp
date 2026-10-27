@@ -56,7 +56,7 @@ public:
     };
 
     DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegistry> links);
-    ~DuckDuckGoSearcher();
+    ~DuckDuckGoSearcher() = default;
 
     std::vector<SearchResult> search(const QString& query,
                                      const LogFn&   log,
@@ -66,7 +66,7 @@ public:
 
     QString format_results_for_llm(const std::vector<SearchResult>& results) const;
 
-    [[nodiscard]] const Config& config() const { return config_; }
+    [[nodiscard]] const Config& config() const { return m_config; }
 
 private:
     QString display_url(const QString& url) const;
@@ -77,9 +77,9 @@ private:
                     const QString& timelimit,
                     const LogFn&   log);
 
-    Config                           config_;
-    std::shared_ptr<LinkRegistry>    links_;
-    std::unique_ptr<RateLimiterBase> rate_limiter_;
+    Config                           m_config;
+    std::shared_ptr<LinkRegistry>    m_links;
+    std::unique_ptr<RateLimiterBase> m_rate_limiter;
 };
 
 }  // namespace ddg

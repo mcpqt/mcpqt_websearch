@@ -101,22 +101,20 @@ QString decode_uddg(const QString& link) {
 }
 
 DuckDuckGoSearcher::DuckDuckGoSearcher(Config config, std::shared_ptr<LinkRegistry> links)
-    : config_(std::move(config)),
-      links_(std::move(links)),
-      rate_limiter_(make_rate_limiter(config_.rate_limit_strategy, config_.requests_per_minute)) {
-    if (!config_.transport) {
+    : m_config(std::move(config)),
+      m_links(std::move(links)),
+      m_rate_limiter(make_rate_limiter(m_config.rate_limit_strategy, m_config.requests_per_minute)) {
+    if (!m_config.transport) {
         throw HttpError("no HTTP transport configured");
     }
 }
 
-DuckDuckGoSearcher::~DuckDuckGoSearcher() = default;
-
 QString DuckDuckGoSearcher::display_url(const QString& url) const {
-    if (config_.ref_url_threshold == 0 ||
-        static_cast<int>(url.size()) <= config_.ref_url_threshold) {
+    if (m_config.ref_url_threshold == 0 ||
+        static_cast<int>(url.size()) <= m_config.ref_url_threshold) {
         return url;
     }
-    const QString token = links_->shorten(url);
+    const QString token = m_links->shorten(url);
     return token +
            " (long URL shortened; pass to fetch_content as-is, or call "
                           "expand_link to get the full URL)";
@@ -138,7 +136,7 @@ QString DuckDuckGoSearcher::request(const QString& data_query,
         {"bing_market", data_region},
     };
     if (!timelimit.isEmpty()) data.insert("df", timelimit);
-    const QString p = lite_safe_search_value(config_.safe_search);
+    const QString p = lite_safe_search_value(m_config.safe_search);
     if (!p.isEmpty()) data.insert("p", p);
 
     HttpRequest request;
@@ -147,10 +145,10 @@ QString DuckDuckGoSearcher::request(const QString& data_query,
     request.headers    = search_headers();
     request.form       = data;
     request.timeout_ms = 30000;
-    HttpResponse resp  = config_.transport(request);
+    HttpResponse resp  = m_config.transport(request);
     if (resp.status == 429) {
         sleep_retry_after(resp.headers);
-        resp = config_.transport(request);
+        resp = m_config.transport(request);
     }
     if (resp.status < 200 || resp.status >= 300) {
         throw HttpStatusError(resp.status, resp);
@@ -169,10 +167,10 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const QString& query,
                                                      const QString& region,
                                                      const QString& timelimit) {
     try {
-        rate_limiter_->acquire();
+        m_rate_limiter->acquire();
 
         const QString effective_region =
-            region.isEmpty() ? config_.default_region : region;
+            region.isEmpty() ? m_config.default_region : region;
         QString effective_timelimit;
         try {
             effective_timelimit = normalize_timelimit(timelimit);
@@ -183,14 +181,13 @@ std::vector<SearchResult> DuckDuckGoSearcher::search(const QString& query,
 
         log_info(log,
                  QString("Searching DuckDuckGo for: %1 (SafeSearch: %2, "
-                         "Region: %3, Time: %4, backend=%5)")
+                         "Region: %3, Time: %4)")
                      .arg(query)
-                     .arg(safe_search_name(config_.safe_search))
+                     .arg(safe_search_name(m_config.safe_search))
                      .arg(effective_region.isEmpty() ? "default"
                                                      : effective_region)
                      .arg(effective_timelimit.isEmpty() ? "any"
-                                                       : effective_timelimit)
-                     .arg(config_.backend));
+                                                       : effective_timelimit));
 
         std::vector<SearchResult> results;
         QString                   s = "0";

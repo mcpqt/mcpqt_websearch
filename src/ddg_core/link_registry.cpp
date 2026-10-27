@@ -11,17 +11,17 @@
 namespace ddg {
 
 LinkRegistry::LinkRegistry(std::size_t max_entries)
-    : max_entries_(max_entries == 0 ? 1 : max_entries) {}
+    : m_max_entries(max_entries == 0 ? 1 : max_entries) {}
 
 std::size_t LinkRegistry::size() const {
-    QMutexLocker<QMutex> locker(&mu_);
-    return static_cast<std::size_t>(map_.size());
+    QMutexLocker<QMutex> locker(&m_mutex);
+    return static_cast<std::size_t>(m_map.size());
 }
 
 void LinkRegistry::clear() {
-    QMutexLocker<QMutex> locker(&mu_);
-    map_.clear();
-    order_.clear();
+    QMutexLocker<QMutex> locker(&m_mutex);
+    m_map.clear();
+    m_order.clear();
 }
 
 QString LinkRegistry::shorten(const QString& url) {
@@ -29,22 +29,22 @@ QString LinkRegistry::shorten(const QString& url) {
     const QByteArray digest =
         QCryptographicHash::hash(url.toUtf8(), QCryptographicHash::Sha256).toHex();
 
-    QMutexLocker<QMutex> locker(&mu_);
+    QMutexLocker<QMutex> locker(&m_mutex);
     QString              key;
     for (int length = 8; length <= digest.size(); ++length) {
         key      = QString::fromLatin1(digest.left(length));
-        auto it  = map_.constFind(key);
-        if (it == map_.cend() || it.value().url == url) break;
+        auto it  = m_map.constFind(key);
+        if (it == m_map.cend() || it.value().url == url) break;
     }
 
-    auto it = map_.find(key);
-    if (it != map_.end()) {
-        order_.removeAll(key);
-        order_.append(key);  // move_to_end
+    auto it = m_map.find(key);
+    if (it != m_map.end()) {
+        m_order.removeAll(key);
+        m_order.append(key);  // move_to_end
     } else {
-        order_.append(key);
-        map_.insert(key, Entry{url});
-        while (static_cast<std::size_t>(map_.size()) > max_entries_) evict_lru_locked();
+        m_order.append(key);
+        m_map.insert(key, Entry{url});
+        while (static_cast<std::size_t>(m_map.size()) > m_max_entries) evict_lru_locked();
     }
     return kRefScheme + key;
 }
@@ -54,17 +54,17 @@ QString LinkRegistry::resolve(const QString& token) {
     if (key.startsWith(kRefScheme, Qt::CaseInsensitive)) key = key.mid(kRefScheme.size());
     key = strip_slashes(key.trimmed()).toLower();
 
-    QMutexLocker<QMutex> locker(&mu_);
-    auto                 it = map_.find(key);
-    if (it == map_.end()) return QString();
-    order_.removeAll(key);
-    order_.append(key);
+    QMutexLocker<QMutex> locker(&m_mutex);
+    auto                 it = m_map.find(key);
+    if (it == m_map.end()) return QString();
+    m_order.removeAll(key);
+    m_order.append(key);
     return it.value().url;
 }
 
 void LinkRegistry::evict_lru_locked() {
-    if (order_.isEmpty()) return;
-    map_.remove(order_.takeFirst());
+    if (m_order.isEmpty()) return;
+    m_map.remove(m_order.takeFirst());
 }
 
 }  // namespace ddg

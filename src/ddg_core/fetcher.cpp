@@ -87,7 +87,7 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
 
     const QString effective_mode =
         (parse_mode.isNull() ? m_config.parse_mode : parse_mode).toLower();
-    if (!contains(kSupportedParseModes, effective_mode)) {
+    if (!kSupportedParseModes.contains(effective_mode)) {
         return QString("Error: Unknown parse_mode '%1'. Supported: text, raw, markdown")
             .arg(effective_mode);
     }

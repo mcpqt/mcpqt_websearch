@@ -19,7 +19,6 @@ namespace ddg {
 // ---------------------------------------------------------------------------
 
 QString strip_slashes(QString s);
-bool    contains(const QStringList& v, const QString& s);
 
 // ---------------------------------------------------------------------------
 // URLs (backed by QUrl)
