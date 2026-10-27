@@ -132,7 +132,7 @@ namespace
         rate_strategy = ddg::to_lower(ddg::trim(v));
       }
 
-      QString parse_mode = QStringLiteral("text");
+      QString parse_mode = QStringLiteral("markdown");
       if(const QString v = env_str("DDG_PARSE_MODE"); !v.isNull())
       {
         parse_mode = ddg::to_lower(ddg::trim(v));

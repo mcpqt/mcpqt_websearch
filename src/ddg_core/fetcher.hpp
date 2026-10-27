@@ -28,7 +28,7 @@ public:
         QString   rate_limit_strategy      = QStringLiteral("sliding");
         double    cache_ttl                = 300.0;
         int       cache_max_entries        = 64;
-        QString   parse_mode               = QStringLiteral("text");
+        QString   parse_mode               = QStringLiteral("markdown");
     };
 
     WebContentFetcher(Config config, std::shared_ptr<LinkRegistry> links);

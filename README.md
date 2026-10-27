@@ -21,7 +21,7 @@ This produces `build/mcpqt_websearch.so` (`.dylib` / `.dll` on other
 platforms).
 
 Fetched page content is extracted with the vendored Readability/Lexbor
-implementation unless `parse_mode=none` is requested, which returns the raw HTTP
+implementation unless `parse_mode=raw` is requested, which returns the raw HTTP
 body. Search result pages are always parsed with the QXmlStreamReader-backed
 parser; there is no build-time parser switch.
 
@@ -66,7 +66,7 @@ Configuration is read from environment variables at plugin load:
 | --- | --- | --- |
 | `DDG_SAFE_SEARCH` | `MODERATE` | Safe-search level: `STRICT`, `MODERATE`, or `OFF`. |
 | `DDG_REGION` | `wt-wt` | Default region/language code. |
-| `DDG_PARSE_MODE` | `text` | Page output mode: `text`, `none` (raw HTML), or `markdown`. |
+| `DDG_PARSE_MODE` | `markdown` | Page output mode: `markdown`, `text`, or `raw` (unfiltered HTML). |
 | `DDG_SEARCH_BACKEND` | build default | Advisory search backend name (webio always performs the request). |
 | `DDG_SEARCH_RPM`, `DDG_FETCH_RPM`, `DDG_FETCH_HOST_RPM` | `30`, `20`, `0` | Rate limits (requests per minute). |
 | `DDG_CACHE_TTL`, `DDG_CACHE_MAX_ENTRIES` | `300`, `64` | Fetch cache lifetime and size. |

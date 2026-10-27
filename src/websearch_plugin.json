@@ -56,7 +56,8 @@
                     },
                     "parse_mode": {
                         "type": "string",
-                        "description": "Optional output mode: 'text' (default), 'none' for unfiltered HTML, or 'markdown'."
+                        "description": "Optional output mode: 'markdown' (default), 'text', or 'raw' for unfiltered HTML.",
+                        "default": "markdown"
                     }
                 },
                 "required": ["url"]

@@ -93,7 +93,7 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
     const QString effective_mode =
         to_lower(parse_mode.isNull() ? m_config.parse_mode : parse_mode);
     if (!contains(kSupportedParseModes, effective_mode)) {
-        return QStringLiteral("Error: Unknown parse_mode '%1'. Supported: text, none, markdown")
+        return QStringLiteral("Error: Unknown parse_mode '%1'. Supported: text, raw, markdown")
             .arg(effective_mode);
     }
 
@@ -115,7 +115,7 @@ QString WebContentFetcher::fetch_and_parse(const QString& url_in,
                               .arg(effective_mode));
 
             const QString html = fetch(url);
-            text               = effective_mode == QStringLiteral("none")
+            text               = effective_mode == QStringLiteral("raw")
                                      ? html
                                      : html::html_to_text(html, effective_mode, url);
             if (!cache_key.isNull()) m_cache.set(cache_key, text);
