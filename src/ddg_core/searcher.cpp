@@ -3,7 +3,7 @@
 #include "searcher.hpp"
 
 #include "error.hpp"
-#include "rate_limiter_factory.hpp"
+#include "rate_limiter.hpp"
 #include "utils.hpp"
 
 #include <QByteArray>

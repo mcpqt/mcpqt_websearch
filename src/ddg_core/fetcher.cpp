@@ -4,7 +4,7 @@
 
 #include "error.hpp"
 #include "html_extract.hpp"
-#include "rate_limiter_factory.hpp"
+#include "rate_limiter.hpp"
 #include "utils.hpp"
 
 #include <QString>

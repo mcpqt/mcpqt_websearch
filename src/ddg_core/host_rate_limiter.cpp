@@ -2,7 +2,7 @@
 
 #include "host_rate_limiter.hpp"
 
-#include "rate_limiter_factory.hpp"
+#include "rate_limiter.hpp"
 #include "utils.hpp"
 
 #include <QMutexLocker>

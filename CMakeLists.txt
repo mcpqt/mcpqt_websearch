@@ -30,11 +30,9 @@ set(DDG_CORE_SOURCES
     src/ddg_core/host_rate_limiter.cpp
     src/ddg_core/webio_transport.cpp
     src/ddg_core/link_registry.cpp
-    src/ddg_core/rate_limiter_factory.cpp
     src/ddg_core/safe_search_mode.cpp
     src/ddg_core/searcher.cpp
-    src/ddg_core/sliding_rate_limiter.cpp
-    src/ddg_core/token_bucket_limiter.cpp
+    src/ddg_core/rate_limiter.cpp
     src/ddg_core/ttl_cache.cpp
     src/ddg_core/html_document.cpp
     src/ddg_core/html_extract.cpp
@@ -59,14 +57,11 @@ set(DDG_CORE_HEADERS
     src/ddg_core/http_response.hpp
     src/ddg_core/link_registry.hpp
     src/ddg_core/log.hpp
-    src/ddg_core/rate_limiter_factory.hpp
     src/ddg_core/rate_limiter.hpp
     src/ddg_core/readability.hpp
     src/ddg_core/safe_search_mode.hpp
     src/ddg_core/searcher.hpp
     src/ddg_core/search_result.hpp
-    src/ddg_core/sliding_rate_limiter.hpp
-    src/ddg_core/token_bucket_limiter.hpp
     src/ddg_core/ttl_cache.hpp
     src/ddg_core/utils.hpp
     src/ddg_core/webio_transport.hpp
