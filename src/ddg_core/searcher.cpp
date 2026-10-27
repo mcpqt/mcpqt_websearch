@@ -2,10 +2,8 @@
 
 #include "searcher.hpp"
 
-#include "connect_error.hpp"
-#include "http_status_error.hpp"
+#include "error.hpp"
 #include "rate_limiter_factory.hpp"
-#include "timeout_error.hpp"
 #include "utils.hpp"
 
 #include <QByteArray>

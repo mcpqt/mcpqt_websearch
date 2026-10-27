@@ -2,7 +2,7 @@
 
 #include "utils.hpp"
 
-#include "blocked_url_error.hpp"
+#include "error.hpp"
 #include "constants.hpp"
 
 #include <QHostAddress>

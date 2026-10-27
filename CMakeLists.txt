@@ -47,8 +47,6 @@ set(DDG_CORE_SOURCES
 )
 
 set(DDG_CORE_HEADERS
-    src/ddg_core/blocked_url_error.hpp
-    src/ddg_core/connect_error.hpp
     src/ddg_core/constants.hpp
     src/ddg_core/error.hpp
     src/ddg_core/fetcher.hpp
@@ -58,9 +56,7 @@ set(DDG_CORE_HEADERS
     src/ddg_core/html_query.hpp
     src/ddg_core/html_text.hpp
     src/ddg_core/http_transport.hpp
-    src/ddg_core/http_error.hpp
     src/ddg_core/http_response.hpp
-    src/ddg_core/http_status_error.hpp
     src/ddg_core/link_registry.hpp
     src/ddg_core/log.hpp
     src/ddg_core/rate_limiter_factory.hpp
@@ -70,7 +66,6 @@ set(DDG_CORE_HEADERS
     src/ddg_core/searcher.hpp
     src/ddg_core/search_result.hpp
     src/ddg_core/sliding_rate_limiter.hpp
-    src/ddg_core/timeout_error.hpp
     src/ddg_core/token_bucket_limiter.hpp
     src/ddg_core/ttl_cache.hpp
     src/ddg_core/utils.hpp

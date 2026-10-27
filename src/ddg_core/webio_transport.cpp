@@ -2,9 +2,7 @@
 
 #include "webio_transport.hpp"
 
-#include "connect_error.hpp"
-#include "http_error.hpp"
-#include "timeout_error.hpp"
+#include "error.hpp"
 
 #include <QEventLoop>
 #include <QFuture>
