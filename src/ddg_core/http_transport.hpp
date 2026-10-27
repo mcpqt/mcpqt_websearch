@@ -6,14 +6,20 @@
 
 #pragma once
 
-#include "http_response.hpp"
-
 #include <QMap>
 #include <QString>
 
 #include <functional>
 
 namespace ddg {
+
+/// A single outbound HTTP response.
+struct HttpResponse {
+    int                    status = 0;
+    QString                body;
+    QMap<QString, QString> headers;   // lower-cased keys
+    QString                location;  // == headers["location"]
+};
 
 /// One outbound request. `form` is used for application/x-www-form-urlencoded
 /// POSTs; `headers` applies to both methods.

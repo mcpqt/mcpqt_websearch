@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "http_response.hpp"
+#include "http_transport.hpp"
 
 #include <QByteArray>
 #include <QString>

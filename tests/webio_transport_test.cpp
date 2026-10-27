@@ -86,7 +86,7 @@ int main() {
               "GET request header");
         check(response.status == 200, "GET status");
         check(response.body == "hello", "GET body");
-        check(response.header("content-type") ==
+        check(response.headers.value("content-type") ==
                   "text/plain",
               "GET response header");
     }

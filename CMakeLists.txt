@@ -54,7 +54,6 @@ set(DDG_CORE_HEADERS
     src/ddg_core/html_query.hpp
     src/ddg_core/html_text.hpp
     src/ddg_core/http_transport.hpp
-    src/ddg_core/http_response.hpp
     src/ddg_core/link_registry.hpp
     src/ddg_core/log.hpp
     src/ddg_core/rate_limiter.hpp
