@@ -36,7 +36,7 @@ QString url_join(const QString& base, const QString& location) {
 }
 
 QString normalize_cache_url(const QString& url) {
-    const QUrl    u(url);
+    const QUrl    u(url, QUrl::TolerantMode);
     const QString scheme =
         u.scheme().isEmpty() ? "http" : u.scheme().toLower();
     const QString host = u.host().toLower();
@@ -52,7 +52,7 @@ QString normalize_cache_url(const QString& url) {
     const QString query = u.query(QUrl::FullyEncoded);
 
     QString out = scheme + "://" + netloc + path;
-    if (!query.isEmpty()) out += QLatin1Char('?') + query;  // fragment intentionally dropped
+    if (!query.isEmpty()) out += QLatin1Char('?') + query;
     return out;
 }
 

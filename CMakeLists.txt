@@ -148,4 +148,18 @@ if(BUILD_TESTING)
         Qt6::Core
     )
     add_test(NAME webio_transport COMMAND webio_transport_test)
+
+    add_executable(ddg_utils_test
+        tests/utils_test.cpp
+        src/ddg_core/utils.cpp
+    )
+    target_include_directories(ddg_utils_test PRIVATE
+        src
+        src/ddg_core
+    )
+    target_link_libraries(ddg_utils_test PRIVATE
+        Qt6::Core
+        Qt6::Network
+    )
+    add_test(NAME ddg_utils COMMAND ddg_utils_test)
 endif()
