@@ -258,23 +258,32 @@ QString html_to_text(const QString& html, const QString& mode, const QString& ba
                 .arg(mode));
     }
 
+    QString extracted;
+
     Article article = extract_article(html, base_url);
     if (article.ok) {
-        if (mode == "markdown") return html_to_markdown(article.content);
-        return render_plain_text(article.content);
+        extracted = mode == "markdown" ? html_to_markdown(article.content)
+                                       : render_plain_text(article.content);
+    } else {
+        // Readability needs a body with readable content. For tiny/structural
+        // documents fall back to rendering the document body directly.
+        Document doc = Document::parse(html);
+        if (doc.valid()) {
+            lxb_dom_node_t* root = doc.root();
+            if (mode == "text") {
+                strip_chrome(root, kTextChromeTags);
+                extracted = render_plain_text(root);
+            } else {
+                extracted = html_to_markdown(root);
+            }
+        }
     }
 
-    // Readability needs a body with readable content. For tiny/structural
-    // documents fall back to rendering the document body directly.
-    Document doc = Document::parse(html);
-    if (!doc.valid()) return QString();
+    if (!extracted.isEmpty()) return extracted;
 
-    lxb_dom_node_t* root = doc.root();
-    if (mode == "text") {
-        strip_chrome(root, kTextChromeTags);
-        return render_plain_text(root);
-    }
-    return html_to_markdown(root);
+    return QStringLiteral(
+               "Content extraction failed; returning raw page contents.\n\n") +
+           html;
 }
 
 }  // namespace ddg::html
