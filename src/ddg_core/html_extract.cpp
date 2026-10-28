@@ -281,8 +281,7 @@ QString html_to_text(const QString& html, const QString& mode, const QString& ba
 
     if (!extracted.isEmpty()) return extracted;
 
-    return QStringLiteral(
-               "Content extraction failed; returning raw page contents.\n\n") +
+    return "Content extraction failed; returning raw page contents.\n\n" +
            html;
 }
 

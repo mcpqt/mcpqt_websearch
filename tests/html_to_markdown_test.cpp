@@ -106,15 +106,14 @@ int main(int argc, char** argv) {
           "markdown parentheses are unbalanced");
 
     const QString empty_html =
-        QStringLiteral("<html><head><title>Empty</title></head>"
-                       "<body><script>var x = 1;</script></body></html>");
-    for (const QString& mode : {QStringLiteral("text"), QStringLiteral("markdown")}) {
+        "<html><head><title>Empty</title></head>"
+        "<body><script>var x = 1;</script></body></html>";
+    for (const QString& mode : {QString("text"), QString("markdown")}) {
         const QString fallback = ddg::html::html_to_text(empty_html, mode);
-        check(fallback.contains(QStringLiteral("extraction failed"),
-                                Qt::CaseInsensitive),
-              mode + QStringLiteral(" fallback is missing the failure message"));
+        check(fallback.contains("extraction failed", Qt::CaseInsensitive),
+              mode + " fallback is missing the failure message");
         check(fallback.contains(empty_html),
-              mode + QStringLiteral(" fallback is missing the raw page contents"));
+              mode + " fallback is missing the raw page contents");
     }
 
     if (g_failures != 0) {
